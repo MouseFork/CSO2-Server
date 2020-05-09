@@ -302,7 +302,8 @@ func buildNewRoom(seq *uint8, p packet) []byte {
 }
 
 func buildRoomSetting(seq *uint8, p packet) []byte {
-
+	var buf []byte
+	return buf
 }
 
 func onRoomList(seq *uint8, p *packet, client net.Conn) {
