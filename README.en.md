@@ -1,6 +1,6 @@
 # CSO2-Server
 
-#### Description
+### Description
 
 counter-strike online 2 server
 
@@ -10,13 +10,13 @@ This project is incomplete right now !
 
 Refer to the code of l-leite.
 
-#### Build
+### Build
 
 1.  enter the folder
 2.  use "go build" command to build
 3.  run it
 
-#### env
+### env
 
 Go 1.14.2
 
