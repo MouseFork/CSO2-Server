@@ -16,18 +16,21 @@ var (
 	PORT = 30001
 	//HOLEPUNCHPORT 端口
 	HOLEPUNCHPORT = 30002
-	GameServer    = newServer([]byte(DefalutServerName))
+	MainServer    = serverManager{
+		0,
+		[]channelServer{},
+	}
 )
 
 func main() {
 	defer func() {
-		fmt.Println("开始处理异常")
+		fmt.Println("检测到异常")
 		// 获取异常信息
 		if err := recover(); err != nil {
 			//  输出异常信息
 			fmt.Println("error:", err)
 		}
-		fmt.Println("结束异常处理")
+		fmt.Println("异常结束")
 	}()
 	fmt.Println("Counter-Strike Online 2 Server", SERVERVERSION)
 	//初始化TCP
@@ -52,6 +55,8 @@ func main() {
 	defer holepunchserver.Close()
 
 	fmt.Println("Initializing process ...")
+	//初始化主频道服务器
+	MainServer = newMainServer()
 	//开启UDP服务
 	go startHolePunchServer(holepunchserver)
 	//开启TCP服务

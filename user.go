@@ -197,15 +197,17 @@ func onLoginPacket(seq *uint8, p *packet, client *(net.Conn)) bool {
 	//UserInfo部分
 	pkt.BasePacket.id = TypeUserInfo //发送UserInfo消息
 	rst = BytesCombine(BuildHeader(seq, pkt.BasePacket), BuildUserInfo(pkt))
-	WriteLen(&rst) //写入长度
+	WriteLen(&rst)       //写入长度
+	(*client).Write(rst) //发送UserInfo消息
 	log.Println("Sent a user info packet to", (*client).RemoteAddr().String())
 	//ServerList部分
-	(*p).id = TypeServerList
+	onServerList(seq, p, client)
+	/*(*p).id = TypeServerList
 	rst1 := BytesCombine(BuildHeader(seq, *p), BuildServerList())
 	WriteLen(&rst1) //写入长度
 	rst = BytesCombine(rst, rst1)
 	(*client).Write(rst) //发送UserStart消息
-	log.Println("Sent a server list packet to", (*client).RemoteAddr().String())
+	log.Println("Sent a server list packet to", (*client).RemoteAddr().String())*/
 	//Inventory部分
 
 	return true

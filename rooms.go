@@ -320,7 +320,7 @@ func onRoomList(seq *uint8, p *packet, client net.Conn) {
 		client.Write(rst)
 		log.Println("Sent a lobbyReply packet to", client.RemoteAddr().String())
 		//发送频道请求所得房间列表
-		chl := getChannelWithID(pkt.channelIndex)
+		chl := getChannelWithID(pkt.channelIndex, *chlsrv)
 		if chl == nil {
 			log.Println("Client from", client.RemoteAddr().String(), "request a unknown channel !")
 			return
