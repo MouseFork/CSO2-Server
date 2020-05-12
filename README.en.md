@@ -12,8 +12,6 @@ Refer to the code of l-leite.
 
 ![](photos/main.jpg)
 
-![](photos/op.jpg)
-
 ![](photos/intro.jpg)
 
 ![](photos/channel.jpg)
