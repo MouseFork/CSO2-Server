@@ -8,6 +8,14 @@ csol2 服务器
 
 这是我的第一个Go语言项目，用来练习。参考了L-Leite大佬的基于nodejs的代码。
 
+![](photos/main.jpg)
+
+![](photos/op.jpg)
+
+![](photos/intro.jpg)
+
+![](photos/channel.jpg)
+
 ### 已完成的功能
 
     登录、频道
