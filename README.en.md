@@ -12,9 +12,9 @@ Refer to the code of l-leite.
 
 ### Build
 
-1.  enter the folder
-2.  use "go build" command to build
-3.  run it
+    1. enter the folder
+    2. use "go build" command to build
+    3. run it
 
 ### env
 
