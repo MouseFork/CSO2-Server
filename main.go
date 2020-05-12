@@ -150,6 +150,7 @@ func RecvMessage(client net.Conn) {
 			}
 		} else {
 			log.Println("client", client.RemoteAddr().String(), "closed the connection")
+			delUserWithConn(client)
 			client.Close() //关闭con
 			return
 		}
