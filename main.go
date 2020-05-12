@@ -11,14 +11,20 @@ import (
 
 var (
 	//SERVERVERSION 版本号
-	SERVERVERSION = "v0.1.1"
+	SERVERVERSION = "v0.1.2"
 	//PORT 端口
 	PORT = 30001
 	//HOLEPUNCHPORT 端口
 	HOLEPUNCHPORT = 30002
-	MainServer    = serverManager{
+	//MainServer 主服务器
+	MainServer = serverManager{
 		0,
 		[]channelServer{},
+	}
+	//UserManager 全局用户管理
+	UserManager = userManager{
+		0,
+		[]user{},
 	}
 )
 
@@ -60,7 +66,7 @@ func main() {
 	//开启UDP服务
 	go startHolePunchServer(holepunchserver)
 	//开启TCP服务
-	fmt.Println("Server is running at", GetIP()+":"+strconv.Itoa(PORT))
+	fmt.Println("Server is running at", "[localhost]:"+strconv.Itoa(PORT))
 	for {
 		client, err := server.Accept()
 		if err != nil {
@@ -74,7 +80,7 @@ func main() {
 
 func startHolePunchServer(server *(net.UDPConn)) {
 	defer server.Close()
-	fmt.Println("Server holepunch is running at", GetIP()+":"+strconv.Itoa(HOLEPUNCHPORT))
+	fmt.Println("Server holepunch is running at", "[localhost]:"+strconv.Itoa(HOLEPUNCHPORT))
 	data := make([]byte, 1024)
 	for {
 		n, remoteAddr, err := server.ReadFromUDP(data)

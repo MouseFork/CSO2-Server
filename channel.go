@@ -2,7 +2,7 @@ package main
 
 import "log"
 
-var (
+const (
 	DefalutChannelName       = "CSO2-Channel"
 	MAXCHANNELNUM      uint8 = 16
 )
@@ -69,13 +69,13 @@ func getNewChannelID(chlsrv channelServer) uint8 {
 		//ID=0 是非法的
 		return 0
 	}
-	var intbuf [20]uint8
+	var intbuf [MAXCHANNELNUM + 2]uint8
 	//哈希思想
 	for i := 0; i < int(chlsrv.channelCount); i++ {
 		intbuf[chlsrv.channels[i].channelID] = 1
 	}
 	//找到空闲的ID
-	for i := 1; i < 20; i++ {
+	for i := 1; i < int(MAXCHANNELNUM+2); i++ {
 		if intbuf[i] == 0 {
 			//找到了空闲ID
 			return uint8(i)

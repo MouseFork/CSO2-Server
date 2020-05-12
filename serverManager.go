@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-var (
+const (
 	DefalutServerName       = "CSO2-Server"
 	MAXSERVERNUM      uint8 = 8
 )
@@ -135,13 +135,13 @@ func getNewChannelServerID() uint8 {
 		//ID=0 是非法的
 		return 0
 	}
-	var intbuf [10]uint8
+	var intbuf [MAXSERVERNUM + 2]uint8
 	//哈希思想
 	for i := 0; i < int(MainServer.serverNum); i++ {
 		intbuf[MainServer.servers[i].serverIndex] = 1
 	}
 	//找到空闲的ID
-	for i := 1; i < 10; i++ {
+	for i := 1; i < int(MAXSERVERNUM+2); i++ {
 		if intbuf[i] == 0 {
 			//找到了空闲ID
 			return uint8(i)

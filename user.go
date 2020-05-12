@@ -34,6 +34,17 @@ import (
 	"net"
 )
 
+const (
+	//MAXUSERNUM 最大用户数
+	MAXUSERNUM = 1024
+)
+
+//全局用户管理
+type userManager struct {
+	userNum int
+	users   []user
+}
+
 type loginPacket struct {
 	//BasePacket 	   5 bytes
 	BasePacket         packet
@@ -58,14 +69,7 @@ type loginPacket struct {
 	String             []byte
 }
 
-type userList struct {
-	users     []user
-	userIdNum int
-}
-
 type user struct {
-	//连接
-	currentConnection net.Conn
 	//个人信息
 	userid     int
 	loginName  []byte
@@ -80,10 +84,12 @@ type user struct {
 	kills      int
 	deaths     int
 	assists    int
+	//连接
+	currentConnection net.Conn
 	//频道房间信息
-	currentChannelServerIndex int
-	currentChannelIndex       int
-	currentRoom               room
+	currentChannelServerIndex uint8
+	currentChannelIndex       uint8
+	currentRoomId             uint8
 	//仓库信息
 	inventory userInventory
 }
@@ -194,6 +200,9 @@ func onLoginPacket(seq *uint8, p *packet, client *(net.Conn)) bool {
 	(*client).Write(rst) //发送UserStart消息
 	log.Println("User", string(pkt.gameUsername), "from", (*client).RemoteAddr().String(), "logged in !")
 	log.Println("Sent a user start packet to", (*client).RemoteAddr().String())
+	//获得用户数据，待定
+	//把用户加入用户管理器
+
 	//UserInfo部分
 	pkt.BasePacket.id = TypeUserInfo //发送UserInfo消息
 	rst = BytesCombine(BuildHeader(seq, pkt.BasePacket), BuildUserInfo(pkt))
@@ -539,8 +548,64 @@ func newUserInfo(p loginPacket) UserInfo {
 	}
 }
 
-func getUserID() uint32 {
-	return 1
+func addUser(src *user) bool {
+	if (*src).userid == 0 {
+		log.Fatalln("ID of User", (*src).username, "is illegal !")
+		return false
+	}
+	if UserManager.userNum > MAXUSERNUM {
+		log.Fatalln("Online users is too more to login !")
+		return false
+	}
+	for _, v := range UserManager.users {
+		if v.userid == (*src).userid {
+			log.Fatalln("User is already logged in !")
+			return false
+		}
+	}
+	UserManager.userNum++
+	UserManager.users = append(UserManager.users, *src)
+	return true
+}
+
+func delUser(src *user) bool {
+	if (*src).userid == 0 {
+		log.Fatalln("ID of User", (*src).username, "is illegal !")
+		return false
+	}
+	if UserManager.userNum == 0 {
+		log.Fatalln("There is no online user !")
+		return false
+	}
+	for i, v := range UserManager.users {
+		if v.userid == (*src).userid {
+			UserManager.users = append(UserManager.users[:i], UserManager.users[i+1:]...)
+			UserManager.userNum--
+			return true
+		}
+	}
+	return false
+}
+
+func getNewUserID() uint32 {
+	if UserManager.userNum > MAXUSERNUM {
+		log.Fatalln("Online users is too much , unable to get a new id !")
+		//ID=0 是非法的
+		return 0
+	}
+	var intbuf [MAXUSERNUM + 2]uint32
+	//哈希思想
+	for i := 0; i < int(UserManager.userNum); i++ {
+		intbuf[UserManager.users[i].userid] = 1
+	}
+	//找到空闲的ID
+	for i := 1; i < int(MAXUSERNUM+2); i++ {
+		if intbuf[i] == 0 {
+			//找到了空闲ID
+			return uint32(i)
+		}
+	}
+	return 0
 }
 
 func setUserChannel() {
