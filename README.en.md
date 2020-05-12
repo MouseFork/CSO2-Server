@@ -2,13 +2,13 @@
 
 ### Description
 
-counter-strike online 2 server
+Counter-Strike Online 2 Server
 
-It is my first Golang project , in order to practice myself.
+*It is my first Golang project , in order to practice myself.***
 
-This project is incomplete right now !
+***This project is incomplete right now !***
 
-Refer to the code of l-leite.
+***Refer to the code of l-leite.***
 
 ![](photos/main.jpg)
 
@@ -24,8 +24,7 @@ Refer to the code of l-leite.
 
 ### env
 
-Go 1.14.2
+    Go 1.14.2
+    Use port:30001、30002
 
-If you want to set up LAN or extranet server, please open the port of firewall.
-
-Use port:30001、30002
+***If you want to set up LAN or extranet server, please open the port of firewall.***

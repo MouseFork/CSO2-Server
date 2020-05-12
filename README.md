@@ -2,9 +2,9 @@
 
 ### 介绍
 
-csol2 服务器
+CSOL2 服务器
 
-用于NEXON的 Counter-Strike Online 2
+*用于NEXON的 Counter-Strike Online 2*
 
 这是我的第一个Go语言项目，用来练习。参考了L-Leite大佬的基于nodejs的代码。
 
@@ -24,9 +24,9 @@ csol2 服务器
 
 ### 环境
 
-Go 1.14.2
+*Go 1.14.2*
 
-当你要架设局域网或外网时，请打开防火墙的端口。
+***当你要架设局域网或外网时，请打开防火墙的端口。***
 
 ### 编译方法
 
