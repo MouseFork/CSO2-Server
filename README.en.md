@@ -10,11 +10,11 @@ Counter-Strike Online 2 Server
 
 ***Refer to the code of l-leite.***
 
-![](./photos/main.jpg)
+![](github.com/KouKouChan/CSO2-Server/blob/master/photos/main.jpg)
 
-![](./photos/intro.jpg)
+![](github.com/KouKouChan/CSO2-Server/blob/master/photos/intro.jpg)
 
-![](./photos/channel.jpg)
+![](github.com/KouKouChan/CSO2-Server/blob/master/photos/channel.jpg)
 
 ### Build
 
