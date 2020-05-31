@@ -116,7 +116,7 @@ type user struct {
 	//频道房间信息
 	currentChannelServerIndex uint8
 	currentChannelIndex       uint8
-	currentRoomId             uint8
+	currentRoomId             uint16
 	//仓库信息
 	//inventory userInventory
 }
@@ -463,6 +463,10 @@ func PraseLoginPacket(p *loginPacket) {
 }
 
 func newUserInfo(u user) UserInfo {
+	isvip := uint8(0)
+	if u.isVIP() {
+		isvip = 1
+	}
 	return UserInfo{
 		0xFFFFFFFF,
 		0x2241158F,
@@ -564,7 +568,7 @@ func newUserInfo(u user) UserInfo {
 		// 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 		// 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00,
 		// 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3E, 0x00, 0x00},
-		u.isVIP(),
+		isvip,
 		u.vipLevel,
 		u.vipXp,
 		0,
@@ -668,28 +672,33 @@ func getUserByLogin(p loginPacket) user {
 	if u.userid <= 0 {
 		return getUserFromDatabase(p)
 	}
-	return u
+	return *u
 }
 
-func findOnlineUserByName(name []byte) user {
+// 理论上来讲是要从数据库里面读取用户
+// 但是目前暂时先不考虑数据库，以后加进，
+// 目前先发送新用户数据getNewUser()
+func findOnlineUserByName(name []byte) *user {
 	l := len(name)
 	if l <= 0 {
 		log.Fatalln("User name is illegal !")
-		return getNewUser()
+		u := getNewUser()
+		return &u
 	}
 	for _, v := range UserManager.users {
 		if string(v.username) == string(name) {
-			return v
+			return &v
 		}
 	}
-	return getNewUser()
+	u := getNewUser()
+	return &u
 }
 
-func (u user) isVIP() uint8 {
+func (u user) isVIP() bool {
 	if u.vipLevel <= 0 {
-		return 0
+		return false
 	}
-	return 1
+	return true
 }
 
 func (u *user) setID(id uint32) {
@@ -699,6 +708,26 @@ func (u *user) setID(id uint32) {
 func (u *user) setUserName(name []byte) {
 	(*u).loginName = name
 	(*u).username = name
+}
+
+func (u *user) setUserChannelServer(id uint8) {
+	(*u).currentChannelServerIndex = id
+}
+
+func (u *user) setUserChannel(id uint8) {
+	(*u).currentChannelIndex = id
+}
+
+func (u *user) setUserRoom(id uint16) {
+	(*u).currentRoomId = id
+}
+
+func (u *user) quitChannel() {
+	(*u).currentChannelIndex = 0
+}
+
+func (u *user) quitRoom() {
+	(*u).currentRoomId = 0
 }
 
 func getNewUser() user {
@@ -791,10 +820,52 @@ func getUserFromDatabase(p loginPacket) user {
 	return u
 }
 
-func setUserChannel() {
-
+//通过连接获取用户
+func getUserFromConnection(client net.Conn) *user {
+	if UserManager.userNum <= 0 {
+		return nil
+	}
+	for k, v := range UserManager.users {
+		if v.currentConnection == client {
+			return &UserManager.users[k]
+		}
+	}
+	return nil
 }
 
-func getUserFromConnection(client net.Conn) {
+//通过ID获取用户
+func getUserFromID(id uint32) *user {
+	if UserManager.userNum <= 0 {
+		return nil
+	}
+	for k, v := range UserManager.users {
+		if v.userid == id {
+			return &UserManager.users[k]
+		}
+	}
+	return nil
+}
 
+//获取用户所在分区服务器ID
+func (u user) getUserChannelServerID() uint8 {
+	if u.userid <= 0 {
+		return 0
+	}
+	return u.currentChannelServerIndex
+}
+
+//获取用户所在频道ID
+func (u user) getUserChannelID() uint8 {
+	if u.userid <= 0 {
+		return 0
+	}
+	return u.currentChannelIndex
+}
+
+//获取用户所在房间ID
+func (u user) getUserRoomID() uint16 {
+	if u.userid <= 0 {
+		return 0
+	}
+	return u.currentRoomId
 }

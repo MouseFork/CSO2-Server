@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net"
+	"unsafe"
 )
 
 const (
@@ -101,6 +102,10 @@ const (
 	Ingame   = 1
 	Ready    = 2
 
+	//房间status
+	StatusWaiting = 1
+	StatusIngame  = 2
+
 	//队伍平衡
 	Disabled   = 0
 	Enabled    = 1
@@ -117,70 +122,86 @@ const (
 	OUTSetGameResult  = 6
 	OUTsetUserTeam    = 7
 	OUTCountdown      = 14
+
+	//最大房间数
+	MAXROOMNUMS         = 1024
+	DefaultCountdownNum = 7
 )
 
 //房间信息,用于请求频道
 type roomInfo struct {
-	id                uint16
-	flags             uint64
-	roomName          []byte
+	id    uint16
+	flags uint64
+	//roomName          []byte
 	roomNumber        uint8
 	passwordProtected uint8
 	unk03             uint16
-	gameModeId        uint8
-	mapId             uint8
-	numPlayers        uint8
-	maxPlayers        uint8
-	unk08             uint8
-	hostUserId        uint32
-	hostUserName      []byte
-	unk11             uint8
-	unk12             uint8
-	unk13             uint32
-	unk14             uint16
-	unk15             uint16
-	unk16             uint32
-	unk17             uint16
-	unk18             uint16
-	unk19             uint8
-	unk20             uint8
-	unk21             uint8
-	roomStatus        uint8
-	enableBots        uint8
-	unk24             uint8
-	startMoney        uint16
-	unk26             uint8
-	unk27             uint8
-	unk28             uint8
-	unk29             uint8
-	unk30             uint64
-	winLimit          uint8
-	killLimit         uint16
-	forceCamera       uint8
-	botEnabled        uint8
-	botDifficulty     uint8
-	numCtBots         uint8
-	numTrBots         uint8
-	unk35             uint8
-	nextMapEnabled    uint8
-	changeTeams       uint8
-	unk38             uint8
-	unk39             uint8
-	unk40             uint8
-	unk41             uint8
-	difficulty        uint8
+	// gameModeID        uint8
+	// mapID             uint8
+	//maxPlayers uint8
+	unk08        uint8
+	hostUserID   uint32
+	hostUserName []byte
+	unk11        uint8
+	unk12        uint8
+	unk13        uint32
+	unk14        uint16
+	unk15        uint16
+	unk16        uint32
+	unk17        uint16
+	unk18        uint16
+	unk19        uint8
+	unk20        uint8
+	unk21        uint8
+	// roomStatus   uint8
+	// enableBots   uint8
+	unk24 uint8
+	// startMoney   uint16
+	unk26 uint8
+	unk27 uint8
+	unk28 uint8
+	unk29 uint8
+	unk30 uint64
+	// winLimit          uint8
+	// killLimit         uint16
+	// forceCamera    uint8
+	// botEnabled     uint8
+	// botDifficulty  uint8
+	// numCtBots      uint8
+	// numTrBots      uint8
+	unk31 uint8
+	unk35 uint8
+	// nextMapEnabled uint8
+	// changeTeams    uint8
+	areFlashesDisabled uint8
+	canSpec            uint8
+	isVipRoom          uint8
+	vipRoomLevel       uint8
+	// difficulty     uint8
+
+	//设置
+	setting       roomSettings
+	countingDown  bool
+	countdown     uint8
+	numPlayers    uint8
+	users         []user
+	parentChannel uint8
 }
+
+//每个房间的设置数据
 type roomSettings struct {
+	lenOfName          uint8
 	roomName           []byte
 	unk00              uint8
 	unk01              uint8
 	unk02              uint32
 	unk03              uint32
+	lenOfunk09         uint8
 	unk09              []byte
 	unk10              uint16
 	forceCamera        uint8
-	gameModeId         uint8
-	mapId              uint8
+	gameModeID         uint8
+	mapID              uint8
 	unk13              uint8
 	maxPlayers         uint8
 	winLimit           uint8
@@ -194,6 +215,7 @@ type roomSettings struct {
 	unk23              uint8
 	unk24              uint8
 	unk25              uint8
+	lenOfMultiMaps     uint8
 	multiMaps          []byte
 	teamBalanceType    uint8
 	unk29              uint8
@@ -221,12 +243,27 @@ type roomSettings struct {
 	isIngame           uint8
 }
 
-//房间,用于房间
-type room struct {
-	id       uint8
-	settings roomSettings
-	hostid   uint32
-	players  []user
+//InRoomPacket 新建房间时传进来的数据包
+type InNewRoomPacket struct {
+	lenOfName  uint8
+	roomName   []byte
+	unk00      uint16
+	unk01      uint8
+	gameModeID uint8
+	mapID      uint8
+	winLimit   uint8
+	killLimit  uint16
+	unk02      uint8
+	unk03      uint8
+	unk04      uint8
+	lenOfUnk05 uint8
+	unk05      []byte
+	unk06      uint8
+	unk07      uint8
+	unk08      uint8
+	unk09      uint8
+	unk10      uint8
+	unk11      uint32
 }
 
 //房间请求
@@ -286,29 +323,387 @@ func praseRoomPacket(p packet, dest *inRoomPaket) bool {
 	(*dest).InRoomType = p.data[5]
 	return true
 }
+func praseNewRoomQuest(p packet, roompkt *InNewRoomPacket) bool {
+	if p.datalen < 21 {
+		return false
+	}
+	offset := 6
+	(*roompkt).lenOfName = ReadUint8(p.data, &offset)
+	(*roompkt).roomName = ReadString(p.data, &offset, int((*roompkt).lenOfName))
+	(*roompkt).unk00 = ReadUint16(p.data, &offset)
+	(*roompkt).unk01 = ReadUint8(p.data, &offset)
+	(*roompkt).gameModeID = ReadUint8(p.data, &offset)
+	(*roompkt).mapID = ReadUint8(p.data, &offset)
+	(*roompkt).winLimit = ReadUint8(p.data, &offset)
+	(*roompkt).killLimit = ReadUint16(p.data, &offset)
+	(*roompkt).unk02 = ReadUint8(p.data, &offset)
+	(*roompkt).unk03 = ReadUint8(p.data, &offset)
+	(*roompkt).unk04 = ReadUint8(p.data, &offset)
+	(*roompkt).lenOfUnk05 = ReadUint8(p.data, &offset)
+	(*roompkt).unk05 = ReadString(p.data, &offset, int((*roompkt).lenOfUnk05))
+	(*roompkt).unk06 = ReadUint8(p.data, &offset)
+	(*roompkt).unk07 = ReadUint8(p.data, &offset)
+	(*roompkt).unk08 = ReadUint8(p.data, &offset)
+	(*roompkt).unk09 = ReadUint8(p.data, &offset)
+	(*roompkt).unk10 = ReadUint8(p.data, &offset)
+	(*roompkt).unk11 = ReadUint32(p.data, &offset)
+	return true
+}
 
 func onNewRoom(seq *uint8, p packet, client net.Conn) {
-	//将房间生成并保存进服务器
+	//检索房间数据报
+	var roompkt InNewRoomPacket
+	if !praseNewRoomQuest(p, &roompkt) {
+		log.Println("Cannot prase a new room request !")
+		return
+	}
+	//找到对应用户
+	uPtr := getUserFromConnection(client)
+	if uPtr.userid <= 0 {
+		log.Println("A user request a new room but not in server!")
+		return
+	}
+	//检索玩家当前房间
+	if uPtr.currentRoomId > 0 {
+		log.Println("A user request a new room but already in a room!")
+		uPtr.quitRoom()
+		return
+	}
+	//创建房间
+	rm := CreateRoom(roompkt, uPtr)
+	if rm.id <= 0 {
+		log.Println("Cannot create a new room !")
+		return
+	}
+	//把房间加进服务器
+	if !addChannelRoom(rm,
+		uPtr.getUserChannelID(),
+		uPtr.getUserChannelServerID()) {
+		return
+	}
 	//修改用户相关信息
+	uPtr.setUserRoom(rm.id)
 	//生成返回数据报
-}
-
-func buildNewRoom(seq *uint8, p packet) []byte {
-	var buf []byte
 	p.id = TypeRoom
-	buf = BytesCombine(BuildHeader(seq, p), []byte{OUTCreateAndJoin})
-
-	return buf
+	rst := append(BuildHeader(seq, p), OUTCreateAndJoin)
+	sendPacket(rst, client)
+	log.Println("Sent a new room packet to", client.RemoteAddr().String())
+	//生成房间设置数据包
+	rst = BytesCombine(BuildHeader(seq, p), buildRoomSetting(rm))
+	sendPacket(rst, client)
+	log.Println("Sent a room setting packet to", client.RemoteAddr().String())
 }
 
-func buildRoomSetting(seq *uint8, p packet) []byte {
-	var buf []byte
-	return buf
+//创建新房间数据包
+// func buildNewRoom(seq *uint8, p packet) []byte {
+// 	var buf []byte
+// 	p.id = TypeRoom
+// 	buf = BytesCombine(BuildHeader(seq, p), []byte{OUTCreateAndJoin})
+
+// 	return buf
+// }
+
+//创建房间设置数据包
+func buildRoomSetting(room roomInfo) []byte {
+	buf := make([]byte, 128+room.setting.lenOfName+ //实际计算是最大63字节+长度
+		room.setting.lenOfunk09+
+		room.setting.lenOfMultiMaps)
+	offset := 0
+	WriteUint8(&buf, OUTUpdateSettings, &offset)
+	room.flags = getFlags(room)
+	WriteUint64(&buf, room.flags, &offset)
+	lowFlag := *(*uint32)(unsafe.Pointer(&room.flags))
+	flags := room.flags >> 32
+	highFlag := *(*uint32)(unsafe.Pointer(&flags))
+
+	if lowFlag&0x1 != 0 {
+		WriteString(&buf, room.setting.roomName, &offset)
+	}
+	if lowFlag&0x2 != 0 {
+		WriteUint8(&buf, room.setting.unk00, &offset)
+	}
+	if lowFlag&0x4 != 0 {
+		WriteUint8(&buf, room.setting.unk01, &offset)
+		WriteUint32(&buf, room.setting.unk02, &offset)
+		WriteUint32(&buf, room.setting.unk03, &offset)
+	}
+	if lowFlag&0x8 != 0 {
+		WriteString(&buf, room.setting.unk09, &offset)
+	}
+	if lowFlag&0x10 != 0 {
+		WriteUint16(&buf, room.setting.unk10, &offset)
+	}
+	if lowFlag&0x20 != 0 {
+		WriteUint8(&buf, room.setting.forceCamera, &offset)
+	}
+	if lowFlag&0x40 != 0 {
+		WriteUint8(&buf, room.setting.gameModeID, &offset)
+	}
+	if lowFlag&0x80 != 0 {
+		WriteUint8(&buf, room.setting.mapID, &offset)
+		WriteUint8(&buf, room.setting.unk13, &offset)
+	}
+	if lowFlag&0x100 != 0 {
+		WriteUint8(&buf, room.setting.maxPlayers, &offset)
+	}
+	if lowFlag&0x200 != 0 {
+		WriteUint8(&buf, room.setting.winLimit, &offset)
+	}
+	if lowFlag&0x400 != 0 {
+		WriteUint16(&buf, room.setting.killLimit, &offset)
+	}
+	if lowFlag&0x800 != 0 {
+		WriteUint8(&buf, room.setting.unk17, &offset)
+	}
+	if lowFlag&0x1000 != 0 {
+		WriteUint8(&buf, room.setting.unk18, &offset)
+	}
+	if lowFlag&0x2000 != 0 {
+		WriteUint8(&buf, room.setting.weaponRestrictions, &offset)
+	}
+	if lowFlag&0x4000 != 0 {
+		WriteUint8(&buf, room.setting.status, &offset)
+	}
+	if lowFlag&0x8000 != 0 {
+		WriteUint8(&buf, room.setting.unk21, &offset)
+		WriteUint8(&buf, room.setting.mapCycleType, &offset)
+		WriteUint8(&buf, room.setting.unk23, &offset)
+		WriteUint8(&buf, room.setting.unk24, &offset)
+	}
+	if lowFlag&0x10000 != 0 {
+		WriteUint8(&buf, room.setting.unk25, &offset)
+	}
+	if lowFlag&0x20000 != 0 {
+		WriteUint8(&buf, room.setting.lenOfMultiMaps, &offset)
+		for _, v := range room.setting.multiMaps {
+			WriteUint8(&buf, v, &offset)
+		}
+	}
+	if lowFlag&0x40000 != 0 {
+		WriteUint8(&buf, room.setting.teamBalanceType, &offset)
+	}
+	if lowFlag&0x80000 != 0 {
+		WriteUint8(&buf, room.setting.unk29, &offset)
+	}
+	if lowFlag&0x100000 != 0 {
+		WriteUint8(&buf, room.setting.unk30, &offset)
+	}
+	if lowFlag&0x200000 != 0 {
+		WriteUint8(&buf, room.setting.unk31, &offset)
+	}
+	if lowFlag&0x400000 != 0 {
+		WriteUint8(&buf, room.setting.unk32, &offset)
+	}
+	if lowFlag&0x800000 != 0 {
+		WriteUint8(&buf, room.setting.unk33, &offset)
+	}
+	if lowFlag&0x1000000 != 0 {
+		WriteUint8(&buf, room.setting.areBotsEnabled, &offset)
+		if room.setting.areBotsEnabled != 0 {
+			WriteUint8(&buf, room.setting.botDifficulty, &offset)
+			WriteUint8(&buf, room.setting.numCtBots, &offset)
+			WriteUint8(&buf, room.setting.numTrBots, &offset)
+		}
+	}
+
+	if lowFlag&0x2000000 != 0 {
+		WriteUint8(&buf, room.setting.unk35, &offset)
+	}
+
+	if lowFlag&0x4000000 != 0 {
+		WriteUint8(&buf, room.setting.unk36, &offset)
+	}
+
+	if lowFlag&0x8000000 != 0 {
+		WriteUint8(&buf, room.setting.unk37, &offset)
+	}
+
+	if lowFlag&0x10000000 != 0 {
+		WriteUint8(&buf, room.setting.unk38, &offset)
+	}
+
+	if lowFlag&0x20000000 != 0 {
+		WriteUint8(&buf, room.setting.unk39, &offset)
+	}
+
+	if lowFlag&0x40000000 != 0 {
+		WriteUint8(&buf, room.setting.isIngame, &offset)
+	}
+
+	if lowFlag&0x80000000 != 0 {
+		WriteUint16(&buf, room.setting.startMoney, &offset)
+	}
+
+	if highFlag&0x1 != 0 {
+		WriteUint8(&buf, room.setting.changeTeams, &offset)
+	}
+
+	if highFlag&0x2 != 0 {
+		WriteUint8(&buf, room.setting.unk43, &offset)
+	}
+
+	if highFlag&0x4 != 0 {
+		WriteUint8(&buf, room.setting.hltvEnabled, &offset)
+	}
+
+	if highFlag&0x8 != 0 {
+		WriteUint8(&buf, room.setting.unk45, &offset)
+	}
+
+	if highFlag&0x10 != 0 {
+		WriteUint8(&buf, room.setting.respawnTime, &offset)
+	}
+	return buf[:offset]
+}
+
+func getFlags(room roomInfo) uint64 {
+	lowFlag := 0
+	highFlag := 0
+
+	/* tslint:disable: no-bitwise */
+	if room.setting.roomName != nil {
+		lowFlag |= 0x1
+	}
+	if room.setting.unk00 != 0 {
+		lowFlag |= 0x2
+	}
+	if room.setting.unk01 != 0 &&
+		room.setting.unk02 != 0 &&
+		room.setting.unk03 != 0 {
+		lowFlag |= 0x4
+	}
+	if room.setting.unk09 != nil {
+		lowFlag |= 0x8
+	}
+	if room.setting.unk10 != 0 {
+		lowFlag |= 0x10
+	}
+	if room.setting.forceCamera != 0 {
+		lowFlag |= 0x20
+	}
+	if room.setting.gameModeID != 0 {
+		lowFlag |= 0x40
+	}
+	if room.setting.mapID != 0 && room.setting.unk13 != 0 {
+		lowFlag |= 0x80
+	}
+	if room.setting.maxPlayers != 0 {
+		lowFlag |= 0x100
+	}
+	if room.setting.winLimit != 0 {
+		lowFlag |= 0x200
+	}
+	if room.setting.killLimit != 0 {
+		lowFlag |= 0x400
+	}
+	if room.setting.unk17 != 0 {
+		lowFlag |= 0x800
+	}
+	if room.setting.unk18 != 0 {
+		lowFlag |= 0x1000
+	}
+	if room.setting.weaponRestrictions != 0 {
+		lowFlag |= 0x2000
+	}
+	if room.setting.status != 0 {
+		lowFlag |= 0x4000
+	}
+	if room.setting.unk21 != 0 &&
+		room.setting.mapCycleType != 0 &&
+		room.setting.unk23 != 0 &&
+		room.setting.unk24 != 0 {
+		lowFlag |= 0x8000
+	}
+	if room.setting.unk25 != 0 {
+		lowFlag |= 0x10000
+	}
+	if room.setting.multiMaps != nil {
+		lowFlag |= 0x20000
+	}
+	if room.setting.teamBalanceType != 0 {
+		lowFlag |= 0x40000
+	}
+	if room.setting.unk29 != 0 {
+		lowFlag |= 0x80000
+	}
+	if room.setting.unk30 != 0 {
+		lowFlag |= 0x100000
+	}
+	if room.setting.unk31 != 0 {
+		lowFlag |= 0x200000
+	}
+	if room.setting.unk32 != 0 {
+		lowFlag |= 0x400000
+	}
+	if room.setting.unk33 != 0 {
+		lowFlag |= 0x800000
+	}
+	if room.setting.areBotsEnabled != 0 {
+		lowFlag |= 0x1000000
+	}
+
+	if room.setting.unk35 != 0 {
+		lowFlag |= 0x2000000
+	}
+
+	if room.setting.unk36 != 0 {
+		lowFlag |= 0x4000000
+	}
+
+	if room.setting.unk37 != 0 {
+		lowFlag |= 0x8000000
+	}
+
+	if room.setting.unk38 != 0 {
+		lowFlag |= 0x10000000
+	}
+
+	if room.setting.unk39 != 0 {
+		lowFlag |= 0x20000000
+	}
+
+	if room.setting.isIngame != 0 {
+		lowFlag |= 0x40000000
+	}
+
+	if room.setting.startMoney != 0 {
+		lowFlag |= 0x80000000
+	}
+
+	if room.setting.changeTeams != 0 {
+		highFlag |= 0x1
+	}
+
+	if room.setting.unk43 != 0 {
+		highFlag |= 0x2
+	}
+
+	if room.setting.hltvEnabled != 0 {
+		highFlag |= 0x4
+	}
+
+	if room.setting.unk45 != 0 {
+		highFlag |= 0x8
+	}
+
+	if room.setting.respawnTime != 0 {
+		highFlag |= 0x10
+	}
+	/* tslint:enable: no-bitwise */
+
+	flags := uint64(highFlag)
+	flags = flags << 32
+	return flags + uint64(lowFlag)
 }
 
 func onRoomList(seq *uint8, p *packet, client net.Conn) {
 	var pkt roomsRequestPacket
 	if praseChannelRequest(*p, &pkt) {
+		uPtr := getUserFromConnection(client)
+		if uPtr.userid <= 0 {
+			log.Println("A unknow Client from", client.RemoteAddr().String(), "request a RoomList !")
+			return
+		}
 		//发送频道请求返回包
 		chlsrv := getChannelServerWithID(pkt.channelServerIndex)
 		if chlsrv == nil {
@@ -330,7 +725,8 @@ func onRoomList(seq *uint8, p *packet, client net.Conn) {
 		client.Write(rst)
 		log.Println("Sent a roomList packet to", client.RemoteAddr().String())
 		//设置用户所在频道
-		setUserChannel()
+		uPtr.setUserChannelServer(chlsrv.serverIndex)
+		uPtr.setUserChannel(chl.channelID)
 	} else {
 		log.Println("Recived a damaged packet from", client.RemoteAddr().String())
 	}
@@ -371,20 +767,20 @@ func BuildRoomList(seq *uint8, p packet, chl channelInfo) []byte {
 	tempoffset := 0
 	WriteUint16(&buf, chl.roomNum, &tempoffset)
 	for i := 0; i < int(chl.roomNum); i++ {
-		roombuf := make([]byte, 256)
+		roombuf := make([]byte, 512)
 		offset := 0
 		WriteUint16(&roombuf, chl.rooms[i].id, &offset)
 		WriteUint64(&roombuf, chl.rooms[i].flags, &offset)
-		WriteString(&roombuf, chl.rooms[i].roomName, &offset)
+		WriteString(&roombuf, chl.rooms[i].setting.roomName, &offset)
 		WriteUint8(&roombuf, chl.rooms[i].roomNumber, &offset)
 		WriteUint8(&roombuf, chl.rooms[i].passwordProtected, &offset)
 		WriteUint16(&roombuf, chl.rooms[i].unk03, &offset)
-		WriteUint8(&roombuf, chl.rooms[i].gameModeId, &offset)
-		WriteUint8(&roombuf, chl.rooms[i].mapId, &offset)
+		WriteUint8(&roombuf, chl.rooms[i].setting.gameModeID, &offset)
+		WriteUint8(&roombuf, chl.rooms[i].setting.mapID, &offset)
 		WriteUint8(&roombuf, chl.rooms[i].numPlayers, &offset)
-		WriteUint8(&roombuf, chl.rooms[i].maxPlayers, &offset)
+		WriteUint8(&roombuf, chl.rooms[i].setting.maxPlayers, &offset)
 		WriteUint8(&roombuf, chl.rooms[i].unk08, &offset)
-		WriteUint32(&roombuf, chl.rooms[i].hostUserId, &offset)
+		WriteUint32(&roombuf, chl.rooms[i].hostUserID, &offset)
 		WriteString(&roombuf, chl.rooms[i].hostUserName, &offset)
 		WriteUint8(&roombuf, chl.rooms[i].unk11, &offset)
 		WriteUint8(&roombuf, chl.rooms[i].unk12, &offset)
@@ -396,34 +792,129 @@ func BuildRoomList(seq *uint8, p packet, chl channelInfo) []byte {
 		WriteUint16(&roombuf, chl.rooms[i].unk18, &offset)
 		WriteUint8(&roombuf, chl.rooms[i].unk19, &offset)
 		WriteUint8(&roombuf, chl.rooms[i].unk20, &offset)
+		if chl.rooms[i].unk20 == 1 {
+			WriteUint32(&roombuf, 0, &offset)
+			WriteUint8(&roombuf, 0, &offset)
+			WriteUint32(&roombuf, 0, &offset)
+			WriteUint8(&roombuf, 0, &offset)
+		}
 		WriteUint8(&roombuf, chl.rooms[i].unk21, &offset)
-		WriteUint8(&roombuf, chl.rooms[i].roomStatus, &offset)
-		WriteUint8(&roombuf, chl.rooms[i].enableBots, &offset)
+		WriteUint8(&roombuf, chl.rooms[i].setting.status, &offset)
+		WriteUint8(&roombuf, chl.rooms[i].setting.areBotsEnabled, &offset)
 		WriteUint8(&roombuf, chl.rooms[i].unk24, &offset)
-		WriteUint16(&roombuf, chl.rooms[i].startMoney, &offset)
+		WriteUint16(&roombuf, chl.rooms[i].setting.startMoney, &offset)
 		WriteUint8(&roombuf, chl.rooms[i].unk26, &offset)
 		WriteUint8(&roombuf, chl.rooms[i].unk27, &offset)
 		WriteUint8(&roombuf, chl.rooms[i].unk28, &offset)
 		WriteUint8(&roombuf, chl.rooms[i].unk29, &offset)
 		WriteUint64(&roombuf, chl.rooms[i].unk30, &offset)
-		WriteUint8(&roombuf, chl.rooms[i].winLimit, &offset)
-		WriteUint16(&roombuf, chl.rooms[i].killLimit, &offset)
-		WriteUint8(&roombuf, chl.rooms[i].forceCamera, &offset)
-		WriteUint8(&roombuf, chl.rooms[i].botEnabled, &offset)
-		if chl.rooms[i].botEnabled == 1 {
-			WriteUint8(&roombuf, chl.rooms[i].botDifficulty, &offset)
-			WriteUint8(&roombuf, chl.rooms[i].numCtBots, &offset)
-			WriteUint8(&roombuf, chl.rooms[i].numTrBots, &offset)
-		}
+		WriteUint8(&roombuf, chl.rooms[i].setting.winLimit, &offset)
+		WriteUint16(&roombuf, chl.rooms[i].setting.killLimit, &offset)
+		WriteUint8(&roombuf, chl.rooms[i].setting.forceCamera, &offset)
+		// WriteUint8(&roombuf, chl.rooms[i].botEnabled, &offset)
+		// if chl.rooms[i].botEnabled == 1 {
+		// 	WriteUint8(&roombuf, chl.rooms[i].botDifficulty, &offset)
+		// 	WriteUint8(&roombuf, chl.rooms[i].numCtBots, &offset)
+		// 	WriteUint8(&roombuf, chl.rooms[i].numTrBots, &offset)
+		// }
+		WriteUint8(&roombuf, chl.rooms[i].unk31, &offset)
 		WriteUint8(&roombuf, chl.rooms[i].unk35, &offset)
-		WriteUint8(&roombuf, chl.rooms[i].nextMapEnabled, &offset)
-		WriteUint8(&roombuf, chl.rooms[i].changeTeams, &offset)
-		WriteUint8(&roombuf, chl.rooms[i].unk38, &offset)
-		WriteUint8(&roombuf, chl.rooms[i].unk39, &offset)
-		WriteUint8(&roombuf, chl.rooms[i].unk40, &offset)
-		WriteUint8(&roombuf, chl.rooms[i].unk41, &offset)
-		WriteUint8(&roombuf, chl.rooms[i].difficulty, &offset)
+		WriteUint8(&roombuf, chl.rooms[i].setting.nextMapEnabled, &offset)
+		WriteUint8(&roombuf, chl.rooms[i].setting.changeTeams, &offset)
+		WriteUint8(&roombuf, chl.rooms[i].areFlashesDisabled, &offset)
+		WriteUint8(&roombuf, chl.rooms[i].canSpec, &offset)
+		WriteUint8(&roombuf, chl.rooms[i].isVipRoom, &offset)
+		WriteUint8(&roombuf, chl.rooms[i].vipRoomLevel, &offset)
+		WriteUint8(&roombuf, chl.rooms[i].setting.difficulty, &offset)
 		buf = BytesCombine(buf, roombuf[:offset])
 	}
 	return BytesCombine(rst, buf)
+}
+
+func CreateRoom(pkt InNewRoomPacket, u *user) roomInfo {
+	var rm roomInfo
+	srv := getChannelServerWithID(u.getUserChannelServerID())
+	if srv.serverIndex <= 0 {
+		rm.id = 0
+		return rm
+	}
+	chl := getChannelWithID(u.getUserChannelID(), *srv)
+	if chl.channelID <= 0 {
+		rm.id = 0
+		return rm
+	}
+	id := getNewRoomID(*chl)
+	rm.id = id
+	rm.hostUserID = u.userid
+	rm.hostUserName = u.username
+	rm.users = append(rm.users, *u)
+	rm.parentChannel = chl.channelID
+	rm.countingDown = false
+	rm.countdown = DefaultCountdownNum
+	rm.numPlayers = 1
+	rm.passwordProtected = 0
+	rm.unk13 = 0xD73DA43D
+	rm.unk14 = 0x9F31
+	rm.unk15 = 0xB2B9
+	rm.unk16 = 0xD73DA43D
+	rm.unk17 = 0x9F31
+	rm.unk18 = 0xB2B9
+	rm.unk19 = 5
+	rm.unk20 = 0
+	rm.unk21 = 5
+	rm.unk29 = 1
+	rm.unk30 = 0x5AF6F7BF
+	rm.unk31 = 4
+	rm.unk35 = 0
+	if u.isVIP() {
+		rm.isVipRoom = 1
+	} else {
+		rm.isVipRoom = 0
+	}
+	rm.vipRoomLevel = u.vipLevel
+	rm.setting.roomName = pkt.roomName
+	rm.setting.gameModeID = pkt.gameModeID
+	rm.setting.mapID = pkt.mapID
+	rm.setting.winLimit = pkt.winLimit
+	rm.setting.killLimit = pkt.killLimit
+	rm.setting.startMoney = 16000
+	rm.setting.forceCamera = 1
+	rm.setting.nextMapEnabled = 0
+	rm.setting.changeTeams = 0
+	rm.setting.areBotsEnabled = 0 //false = 0,true = 1
+	rm.setting.maxPlayers = 16    //enableBot = 8
+	rm.setting.respawnTime = 3
+	rm.setting.difficulty = 0
+	rm.setting.teamBalanceType = 0
+	rm.setting.weaponRestrictions = 0
+	rm.setting.status = StatusWaiting
+	rm.setting.hltvEnabled = 0
+	rm.setting.mapCycleType = 1
+	rm.setting.numCtBots = 0
+	rm.setting.numTrBots = 0
+	rm.setting.botDifficulty = 0
+	rm.setting.isIngame = 0 //false = 0,true = 1
+	return rm
+}
+
+//getNewRoomID() 暂定
+func getNewRoomID(chl channelInfo) uint16 {
+	if chl.roomNum > MAXROOMNUMS {
+		log.Fatalln("Room is too much ! Unable to create more !")
+		//ID=0 是非法的
+		return 0
+	}
+	var intbuf [MAXROOMNUMS + 2]uint16
+	//哈希思想
+	for i := 0; i < int(chl.roomNum); i++ {
+		intbuf[chl.rooms[i].id] = 1
+	}
+	//找到空闲的ID
+	for i := 1; i < int(MAXROOMNUMS+2); i++ {
+		if intbuf[i] == 0 {
+			//找到了空闲ID
+			return uint16(i)
+		}
+	}
+	return 0
 }

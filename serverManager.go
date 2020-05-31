@@ -11,7 +11,7 @@ const (
 	MAXSERVERNUM      uint8 = 8
 )
 
-//服务器，用于请求服务器
+//分区服务器，管理所拥有的频道
 type channelServer struct {
 	serverIndex  uint8
 	serverStatus uint8
@@ -21,6 +21,7 @@ type channelServer struct {
 	channels     []channelInfo
 }
 
+//主服务器，管理各个分区
 type serverManager struct {
 	serverNum uint8
 	servers   []channelServer
@@ -28,6 +29,11 @@ type serverManager struct {
 
 //处理请求服务器列表
 func onServerList(seq *uint8, p *packet, client *(net.Conn)) {
+	uPtr := getUserFromConnection(*client)
+	if uPtr.userid <= 0 {
+		log.Println("A unknow Client from", (*client).RemoteAddr().String(), "request a ChannelList !")
+		return
+	}
 	(*p).id = TypeServerList
 	rst := BuildHeader(seq, *p)
 	rst = append(rst, MainServer.serverNum)
@@ -37,6 +43,8 @@ func onServerList(seq *uint8, p *packet, client *(net.Conn)) {
 	WriteLen(&rst)       //写入长度
 	(*client).Write(rst) //发送UserStart消息
 	log.Println("Sent a server list packet to", (*client).RemoteAddr().String())
+	uPtr.setUserChannelServer(0)
+	uPtr.quitChannel()
 }
 
 //建立某个频道服务器数据包
@@ -83,6 +91,12 @@ func addChannelServer(dest *serverManager, src *channelServer) bool {
 		log.Fatalln("ID of ChannelServer is illegal !")
 		return false
 	}
+	for _, v := range dest.servers {
+		if v.serverIndex == src.serverIndex {
+			log.Fatalln("ChannelServer is already existed in MainServer!")
+			return false
+		}
+	}
 	(*dest).serverNum++
 	(*dest).servers = append((*dest).servers, *src)
 	return true
@@ -122,6 +136,12 @@ func addChannel(dest *channelServer, src *channelInfo) bool {
 	if (*src).channelID == 0 {
 		log.Fatalln("ID of Channel is illegal !")
 		return false
+	}
+	for _, v := range dest.channels {
+		if v.channelID == src.channelID {
+			log.Fatalln("Channel is already existed in ChannelServer!")
+			return false
+		}
 	}
 	(*dest).channelCount++
 	(*dest).channels = append((*dest).channels, *src)

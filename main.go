@@ -11,7 +11,7 @@ import (
 
 var (
 	//SERVERVERSION 版本号
-	SERVERVERSION = "v0.1.2"
+	SERVERVERSION = "v0.1.3"
 	//PORT 端口
 	PORT = 30001
 	//HOLEPUNCHPORT 端口

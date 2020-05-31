@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"encoding/gob"
 	"math"
+	"net"
 )
 
 type packet struct {
@@ -61,6 +62,43 @@ func (p *packet) PrasePacket() {
 	(*p).sequence = (*p).data[1]
 	(*p).length = getUint16((*p).data[2:4])
 	(*p).id = (*p).data[4]
+}
+
+func ReadUint8(b []byte, offset *int) uint8 {
+	buf := bytes.NewBuffer(b[(*offset):])
+	var i uint8
+	binary.Read(buf, binary.BigEndian, &i)
+	(*offset)++
+	return i
+}
+
+func ReadUint16(b []byte, offset *int) uint16 {
+	buf := bytes.NewBuffer(b[(*offset):])
+	var i uint16
+	binary.Read(buf, binary.BigEndian, &i)
+	(*offset) += 2
+	return i
+}
+
+func ReadUint32(b []byte, offset *int) uint32 {
+	buf := bytes.NewBuffer(b[(*offset):])
+	var i uint32
+	binary.Read(buf, binary.BigEndian, &i)
+	(*offset) += 4
+	return i
+}
+
+func ReadUint64(b []byte, offset *int) uint64 {
+	buf := bytes.NewBuffer(b[(*offset):])
+	var i uint64
+	binary.Read(buf, binary.BigEndian, &i)
+	(*offset) += 8
+	return i
+}
+
+func ReadString(b []byte, offset *int, len int) []byte {
+	(*offset) += len
+	return b[(*offset)-len : (*offset)]
 }
 
 func getUint16(b []byte) uint16 {
@@ -155,6 +193,7 @@ func BytesCombine(pBytes ...[]byte) []byte {
 	return bytes.Join(pBytes, []byte(""))
 }
 
+//结构体转数组
 func Encode(data interface{}) ([]byte, error) {
 	buf := bytes.NewBuffer(nil)
 	enc := gob.NewEncoder(buf)
@@ -173,4 +212,9 @@ func Decode(data []byte, to interface{}) error {
 
 func newNullString() []byte {
 	return []byte{0x00, 0x00, 0x00, 0x00}
+}
+
+func sendPacket(data []byte, client net.Conn) {
+	WriteLen(&data)
+	client.Write(data)
 }

@@ -7,7 +7,7 @@ const (
 	MAXCHANNELNUM      uint8 = 16
 )
 
-//频道信息，隶属于Server频道,用于请求服务器和请求频道
+//频道信息，隶属于分区服务器,用于请求服务器和请求频道
 type channelInfo struct {
 	channelID   uint8
 	channelName []byte
@@ -96,19 +96,64 @@ func getChannelWithID(id uint8, chlsrv channelServer) *channelInfo {
 	return nil
 }
 
-//新建房间
-func addChannelRoom(host uint32, id uint8, chlsrv channelServer) {
-	chlptr := getChannelWithID(id, chlsrv)
-	// room := roomInfo{
-	// 	(*chlptr).nextRoomID,
-
-	// }
-	//(*chlptr).rooms = append((*chlptr).rooms, room)
-	(*chlptr).roomNum++
-
+//添加房间
+func addChannelRoom(room roomInfo, chlid uint8, chlsrvid uint8) bool {
+	chlsrv := getChannelServerWithID(chlsrvid)
+	if chlsrv.serverIndex <= 0 {
+		log.Fatalln("Add room to a null channelServer!")
+		return false
+	}
+	chl := getChannelWithID(chlid, *chlsrv)
+	if chl.channelID <= 0 {
+		log.Fatalln("Add room to a null channel!")
+		return false
+	}
+	if chl.roomNum > MAXROOMNUMS {
+		log.Fatalln("Room is too much ! Unable to add more !")
+		return false
+	}
+	if room.id <= 0 {
+		log.Fatalln("ID of room is illegal !")
+		return false
+	}
+	for _, v := range chl.rooms {
+		if v.id == room.id {
+			log.Fatalln("Room is already existed in Channel!")
+			return false
+		}
+	}
+	chl.roomNum++
+	chl.rooms = append(chl.rooms, room)
+	return true
 }
 
 //删除频道房间
-func delChannelRoom() {
-
+func delChannelRoom(roomid uint16, chlid uint8, chlsrvid uint8) bool {
+	chlsrv := getChannelServerWithID(chlsrvid)
+	if chlsrv.serverIndex <= 0 {
+		log.Fatalln("Remove room to a null channelServer!")
+		return false
+	}
+	chl := getChannelWithID(chlid, *chlsrv)
+	if chl.channelID <= 0 {
+		log.Fatalln("Remove room to a null channel!")
+		return false
+	}
+	if chl.roomNum <= 0 {
+		log.Fatalln("There is no room in this channel , unable to remove!")
+		return false
+	}
+	if roomid <= 0 {
+		log.Fatalln("ID of room is illegal !")
+		return false
+	}
+	for k, v := range chl.rooms {
+		if v.id == roomid {
+			chl.roomNum--
+			chl.rooms = append(chl.rooms[:k], chl.rooms[k+1:]...)
+			log.Println("Room", roomid, "had been deleted!")
+			return true
+		}
+	}
+	return false
 }
