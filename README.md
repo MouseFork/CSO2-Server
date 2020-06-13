@@ -8,11 +8,11 @@ CSOL2 服务器
 
 这是我的第一个Go语言项目，用来练习。参考了L-Leite大佬的基于nodejs的代码。
 
-![Image](https://github.com/KouKouChan/CSO2-Server/blob/master/photos/main.png)
+![Image](github.com/KouKouChan/CSO2-Server/blob/master/photos/main.png)
 
-![Image](https://github.com/KouKouChan/CSO2-Server/blob/master/photos/intro.png)
+![Image](github.com/KouKouChan/CSO2-Server/blob/master/photos/intro.png)
 
-![Image](https://github.com/KouKouChan/CSO2-Server/blob/master/photos/channel.png)
+![Image](github.com/KouKouChan/CSO2-Server/blob/master/photos/channel.png)
 
 ### 已完成的功能
 
