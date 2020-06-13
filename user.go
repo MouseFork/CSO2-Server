@@ -36,7 +36,11 @@ import (
 
 const (
 	//MAXUSERNUM 最大用户数
-	MAXUSERNUM = 1024
+	MAXUSERNUM = 1024 //房间状态
+
+	UserNotReady = 0
+	UserIngame   = 1
+	UserReady    = 2
 )
 
 //全局用户管理
@@ -58,7 +62,7 @@ type loginPacket struct {
 	//HddHwid 	   	   16 bytes
 	HddHwid []byte
 	//netCafeID 	   4 bytes
-	netCafeID          []byte
+	netCafeID          uint32
 	unknown02          uint32
 	userSn             uint64
 	lenOfUnknownString uint16
@@ -117,6 +121,10 @@ type user struct {
 	currentChannelServerIndex uint8
 	currentChannelIndex       uint8
 	currentRoomId             uint16
+	currentTeam               uint8
+	currentstatus             uint8
+	currentIsIngame           bool
+
 	//仓库信息
 	//inventory userInventory
 }
@@ -243,7 +251,7 @@ func onLoginPacket(seq *uint8, p *packet, client *(net.Conn)) bool {
 	//UserInfo部分
 	pkt.BasePacket.id = TypeUserInfo //发送UserInfo消息
 	info := newUserInfo(u)
-	rst = BytesCombine(BuildHeader(seq, pkt.BasePacket), BuildUserInfo(info, u.userid))
+	rst = BytesCombine(BuildHeader(seq, pkt.BasePacket), BuildUserInfo(info, u.userid, true))
 	WriteLen(&rst)       //写入长度
 	(*client).Write(rst) //发送UserInfo消息
 	log.Println("Sent a user info packet to", (*client).RemoteAddr().String())
@@ -278,14 +286,16 @@ func BuildUserStart(u user) []byte {
 	return userbuf
 }
 
-func BuildUserInfo(info UserInfo, id uint32) []byte {
+func BuildUserInfo(info UserInfo, id uint32, needID bool) []byte {
 	infobuf := make([]byte, 1024)
 	// if err != nil {
 	// 	log.Println("Server occurred an error while senting user info packet !")
 	// 	return nil
 	// }
 	offset := 0
-	WriteUint32(&infobuf, id, &offset)
+	if needID {
+		WriteUint32(&infobuf, id, &offset)
+	}
 	WriteUint32(&infobuf, info.flags, &offset)
 	WriteUint64(&infobuf, info.unk00, &offset)
 	WriteString(&infobuf, info.userName, &offset)
@@ -398,6 +408,7 @@ func PraseLoginPacket(p *loginPacket) {
 	lenOfData := (*p).BasePacket.datalen
 	offset := 5
 
+	log.Println("user len", (*p).BasePacket.length)
 	(*p).lenOfNexonUsername = (*p).BasePacket.data[offset]
 	offset++
 
@@ -429,16 +440,12 @@ func PraseLoginPacket(p *loginPacket) {
 		(*p).BasePacket.IsGoodPacket = false
 		return
 	}
-
-	(*p).netCafeID = (*p).BasePacket.data[offset : offset+4]
-	offset += 4
-
+	(*p).netCafeID = ReadUint32BE((*p).BasePacket.data, &offset)
 	(*p).unknown02 = getUint32((*p).BasePacket.data[offset : offset+4])
 	offset += 4
 
 	(*p).userSn = getUint64((*p).BasePacket.data[offset : offset+8])
 	offset += 8
-
 	(*p).lenOfUnknownString = getUint16((*p).BasePacket.data[offset : offset+2])
 	offset += 2
 
@@ -806,6 +813,9 @@ func getNewUser() user {
 		1,      //serverid
 		0,      //channelid
 		0,      //roomid
+		0,      //currentTeam
+		0,      //currentstatus
+		false,  //currentIsIngame
 	}
 }
 
@@ -868,4 +878,8 @@ func (u user) getUserRoomID() uint16 {
 		return 0
 	}
 	return u.currentRoomId
+}
+
+func (u user) getUserTeam() uint8 {
+	return u.currentTeam
 }
