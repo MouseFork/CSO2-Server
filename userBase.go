@@ -241,6 +241,8 @@ func (u *user) quitChannel() {
 
 func (u *user) quitRoom() {
 	(*u).currentRoomId = 0
+	(*u).currentTeam = Unknown
+	(*u).currentstatus = UserNotReady
 }
 
 func getNewUser() user {
@@ -388,4 +390,8 @@ func (u user) getUserRoomID() uint16 {
 
 func (u user) getUserTeam() uint8 {
 	return u.currentTeam
+}
+
+func (u user) isUserReady() bool {
+	return u.currentstatus == UserReady
 }

@@ -78,32 +78,7 @@ func main() {
 	}
 }
 
-func startHolePunchServer(server *(net.UDPConn)) {
-	defer server.Close()
-	fmt.Println("Server holepunch is running at", "[AnyAdapter]:"+strconv.Itoa(HOLEPUNCHPORT))
-	data := make([]byte, 1024)
-	for {
-		n, remoteAddr, err := server.ReadFromUDP(data)
-		if err != nil {
-			fmt.Printf("Server holepunch read error from", server.RemoteAddr().String())
-		}
-		log.Printf("<%s> %s\n", remoteAddr.String(), data[:n])
-		// client, err := (*server).Accept()
-		// if err != nil {
-		// 	log.Fatal("Server Accept data error !\n")
-		// 	continue
-		// }
-		// log.Println("Server accept a new connection request at", client.RemoteAddr().String())
-		// go RecvHolePunchMessage(client)
-	}
-}
-
-//RecvHolePunchMessage 处理收到的包
-func RecvHolePunchMessage(holeclient net.Conn) {
-
-}
-
-//RecvMessage 处理收到的包
+//RecvMessage 循环处理收到的包
 func RecvMessage(client net.Conn) {
 	defer client.Close() //关闭con
 	var seq uint8 = 0
@@ -126,7 +101,7 @@ func RecvMessage(client net.Conn) {
 			switch pkt.id {
 			case TypeVersion:
 				log.Println("Recived a client version packet from", client.RemoteAddr().String())
-				client.Write(onVersionPacket(&seq, pkt))
+				onVersionPacket(&seq, pkt, client)
 			case TypeLogin:
 				log.Println("Recived a login request packet from", client.RemoteAddr().String())
 				if !onLoginPacket(&seq, &pkt, &client) {

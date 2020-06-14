@@ -1,5 +1,7 @@
 package main
 
+import "log"
+
 //发送出去的包结构，其中一些未知，知道后会加入user里去
 type UserInfo struct {
 	flags         uint32 // should always be 0xFFFFFFFF for a full update
@@ -334,4 +336,27 @@ func newUserInfo(u user) UserInfo {
 		0,
 		0,
 	}
+}
+
+func (u user) buildUserNetInfo() []byte {
+	buf := make([]byte, 25)
+	offset := 0
+	WriteUint8(&buf, u.getUserTeam(), &offset)
+	WriteUint8(&buf, 0, &offset)
+	WriteUint8(&buf, 0, &offset)
+	cliadr := u.currentConnection.RemoteAddr().String()
+	externalIPAddress, err := IPToUint32(cliadr[:slideIP(cliadr)])
+	if err != nil {
+		log.Fatalln("Prasing externalIpAddress error !")
+		return buf
+	}
+	WriteUint32BE(&buf, externalIPAddress, &offset) //externalIpAddress
+	WriteUint16(&buf, 0, &offset)                   //externalServerPort
+	WriteUint16(&buf, 0, &offset)                   //externalClientPort
+	WriteUint16(&buf, 0, &offset)                   //externalTvPort
+	WriteUint32BE(&buf, 0, &offset)                 //localIpAddress
+	WriteUint16(&buf, 0, &offset)                   //localServerPort
+	WriteUint16(&buf, 0, &offset)                   //localClientPort
+	WriteUint16(&buf, 0, &offset)                   //localTvPort
+	return buf[:offset]
 }

@@ -1,6 +1,8 @@
 package main
 
-func onVersionPacket(seq *uint8, p packet) []byte {
+import "net"
+
+func onVersionPacket(seq *uint8, p packet, client net.Conn) {
 	header := BuildHeader(seq, p)
 	header[1] = 0
 	*seq = 0
@@ -8,6 +10,5 @@ func onVersionPacket(seq *uint8, p packet) []byte {
 	IsBadHash[0] = 0
 	hash := []byte("6246015df9a7d1f7311f888e7e861f18")
 	rst := BytesCombine(header, IsBadHash, hash)
-	WriteLen(&rst)
-	return rst
+	sendPacket(rst, client)
 }

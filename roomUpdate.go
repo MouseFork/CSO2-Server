@@ -106,7 +106,7 @@ func onUpdateRoom(seq *uint8, p packet, client net.Conn) {
 		sendPacket(rst, v.currentConnection)
 		log.Println("["+strconv.Itoa(k+1)+"/"+strconv.Itoa(int((*curroom).numPlayers))+"] Updated room for", v.currentConnection.RemoteAddr().String(), "!")
 	}
-	log.Println("Hoster from", client.RemoteAddr().String(), "updated room !")
+	log.Println("Host from", client.RemoteAddr().String(), "updated room !")
 }
 
 func praseUpdateRoomPacket(src packet, dest *upSettingReq) bool {
@@ -209,51 +209,39 @@ func praseUpdateRoomPacket(src packet, dest *upSettingReq) bool {
 			(*dest).numTrBots = ReadUint8(src.data, &offset)
 		}
 	}
-
 	if lowFlag&0x2000000 != 0 {
 		(*dest).unk35 = ReadUint8(src.data, &offset)
 	}
-
 	if lowFlag&0x4000000 != 0 {
 		(*dest).unk36 = ReadUint8(src.data, &offset)
 	}
-
 	if lowFlag&0x8000000 != 0 {
 		(*dest).unk37 = ReadUint8(src.data, &offset)
 	}
-
 	if lowFlag&0x10000000 != 0 {
 		(*dest).unk38 = ReadUint8(src.data, &offset)
 	}
-
 	if lowFlag&0x20000000 != 0 {
 		(*dest).unk39 = ReadUint8(src.data, &offset)
 	}
-
 	if lowFlag&0x40000000 != 0 {
 		(*dest).isIngame = ReadUint8(src.data, &offset)
 	}
-
 	if lowFlag&0x80000000 != 0 {
 		(*dest).startMoney = ReadUint16(src.data, &offset)
 	}
-
 	if highFlag&0x1 != 0 {
 		(*dest).changeTeams = ReadUint8(src.data, &offset)
 	}
-
 	if highFlag&0x2 != 0 {
 		(*dest).unk43 = ReadUint8(src.data, &offset)
 	}
-
 	if highFlag&0x4 != 0 {
 		(*dest).hltvEnabled = ReadUint8(src.data, &offset)
 	}
-
 	if highFlag&0x8 != 0 {
 		(*dest).unk45 = ReadUint8(src.data, &offset)
 	}
-
 	if highFlag&0x10 != 0 {
 		(*dest).respawnTime = ReadUint8(src.data, &offset)
 	}
