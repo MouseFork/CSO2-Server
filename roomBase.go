@@ -120,6 +120,19 @@ const (
 	//最大房间数
 	MAXROOMNUMS         = 1024
 	DefaultCountdownNum = 7
+
+	//HOST操作
+	GameStart         = 0 // when a host starts a new game
+	HostJoin          = 1 // when someone joins some host's game
+	HostStop          = 3
+	LeaveResultWindow = 4
+
+	// logging packet types
+	OnGameEnd = 21
+
+	SetInventory = 101 // there are 2 or 3 other host packet types that send this
+	SetLoadout   = 107
+	SetBuyMenu   = 111
 )
 
 //房间信息
@@ -215,9 +228,10 @@ func onRoomRequest(seq *uint8, p packet, client net.Conn) {
 			onLeaveRoom(seq, p, client)
 		case ToggleReadyRequest:
 			log.Println("Recived a ready request from", client.RemoteAddr().String())
-
+			onToggleReady(seq, p, client)
 		case GameStartRequest:
 			log.Println("Recived a start game request from", client.RemoteAddr().String())
+			onGameStart(seq, p, client)
 		case UpdateSettings:
 			log.Println("Recived a update room setting request from", client.RemoteAddr().String())
 			onUpdateRoom(seq, p, client)
@@ -287,6 +301,43 @@ func getRoomFromID(chlsrvID uint8, chlID uint8, roomID uint16) *roomInfo {
 	return nil
 }
 
-func (ri roomInfo) isGlobalCountdownInProgress() bool {
-	return ri.countingDown
+func (rm roomInfo) isGlobalCountdownInProgress() bool {
+	return rm.countingDown
+}
+
+// func (rm roomInfo) toggleUserReadyStatu() {
+
+// }
+
+func (rm roomInfo) roomGetUser(id uint32) *user {
+	if id <= 0 ||
+		rm.id <= 0 ||
+		rm.numPlayers <= 0 {
+		return nil
+	}
+	for k, v := range rm.users {
+		if v.userid == id {
+			return &rm.users[k]
+		}
+	}
+	return nil
+}
+
+func (rm *roomInfo) stopCountdown() {
+	if rm == nil {
+		return
+	}
+	(*rm).countdown = DefaultCountdownNum
+	(*rm).countingDown = false
+}
+
+func (rm *roomInfo) setStatus(status uint8) {
+	if rm == nil {
+		return
+	}
+	if status == 1 ||
+		status == 2 {
+		(*rm).setting.status = status
+		(*rm).setting.isIngame = status - 1
+	}
 }

@@ -37,20 +37,21 @@ func onNewRoom(seq *uint8, p packet, client net.Conn) {
 	}
 	//找到对应用户
 	uPtr := getUserFromConnection(client)
-	if uPtr.userid <= 0 {
+	if uPtr == nil ||
+		uPtr.userid <= 0 {
 		log.Println("A user request a new room but not in server!")
 		return
 	}
 	//检索玩家当前房间
 	if uPtr.currentRoomId > 0 {
-		log.Println("A user request a new room but already in a room!")
+		log.Println(uPtr.username, "request a new room but already in a room!")
 		uPtr.quitRoom()
 		return
 	}
 	//创建房间
 	rm := CreateRoom(roompkt, uPtr)
 	if rm.id <= 0 {
-		log.Println("Cannot create a new room !")
+		log.Println(uPtr.username, "cannot create a new room !")
 		return
 	}
 	//把房间加进服务器
@@ -60,7 +61,13 @@ func onNewRoom(seq *uint8, p packet, client net.Conn) {
 		return
 	}
 	//修改用户相关信息
+	u := rm.roomGetUser(uPtr.userid)
+	if u == nil {
+		log.Println("Cannot add host ", uPtr.username, "to new room !")
+		return
+	}
 	uPtr.setUserRoom(rm.id)
+	u.setUserRoom(rm.id)
 	//生成返回数据报
 	p.id = TypeRoom
 	rst := append(BuildHeader(seq, p), OUTCreateAndJoin)

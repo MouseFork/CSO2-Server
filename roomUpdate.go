@@ -70,31 +70,32 @@ func onUpdateRoom(seq *uint8, p packet, client net.Conn) {
 	}
 	//找到对应用户
 	uPtr := getUserFromConnection(client)
-	if uPtr.userid <= 0 {
-		log.Println("Client from", client.RemoteAddr().String(), "try to update room but not in server !")
+	if uPtr == nil ||
+		uPtr.userid <= 0 {
+		log.Println("Client from", client.RemoteAddr().String(), "try to toggle ready status but not in server !")
 		return
 	}
 	//检查用户是不是房主
 	curroom := getRoomFromID(uPtr.getUserChannelServerID(),
 		uPtr.getUserChannelID(),
 		uPtr.getUserRoomID())
-	if (*curroom).id <= 0 {
-		log.Println("Client from", client.RemoteAddr().String(), "try to update a null room but in server !")
-		delChannelRoom((*curroom).id, uPtr.getUserChannelID(), uPtr.getUserChannelServerID())
+	if curroom == nil ||
+		curroom.id <= 0 {
+		log.Println("user:", uPtr.username, "try to update a null room but in server !")
 		return
 	}
-	if (*curroom).hostUserID != (uPtr).userid {
-		log.Println("Client from", client.RemoteAddr().String(), "try to update a room but isn't host !")
+	if curroom.hostUserID != uPtr.userid {
+		log.Println("user:", uPtr.username, "try to update a room but isn't host !")
 		return
 	}
 	//检查用户所在房间
-	if (*curroom).id != (uPtr).currentRoomId {
-		log.Println("Client from", client.RemoteAddr().String(), "try to update a room but not in !")
+	if curroom.id != uPtr.currentRoomId {
+		log.Println("user:", uPtr.username, "try to update a room but not in !")
 		return
 	}
 	//检查当前是不是正在倒计时
 	if (*curroom).isGlobalCountdownInProgress() {
-		log.Println("Client from", client.RemoteAddr().String(), "try to update a room but is counting !")
+		log.Println("user:", uPtr.username, "try to update a room but is counting !")
 		return
 	}
 	//更新房间设置
@@ -102,7 +103,7 @@ func onUpdateRoom(seq *uint8, p packet, client net.Conn) {
 	p.id = TypeRoom
 	//向房间所有玩家发送更新报文
 	for k, v := range (*curroom).users {
-		rst := BytesCombine(BuildHeader(seq, p), buildRoomSetting(*curroom))
+		rst := BytesCombine(BuildHeader(v.currentSequence, p), buildRoomSetting(*curroom))
 		sendPacket(rst, v.currentConnection)
 		log.Println("["+strconv.Itoa(k+1)+"/"+strconv.Itoa(int((*curroom).numPlayers))+"] Updated room for", v.currentConnection.RemoteAddr().String(), "!")
 	}

@@ -44,6 +44,8 @@ func onLoginPacket(seq *uint8, p *packet, client *(net.Conn)) bool {
 		(*client).Close()
 	}
 	u.currentConnection = *client
+	//绑定seq
+	u.currentSequence = seq
 	//把用户加入用户管理器
 	if !addUser(&u) {
 		log.Println("User", string(pkt.gameUsername), "from", (*client).RemoteAddr().String(), "login failed !")
@@ -65,12 +67,6 @@ func onLoginPacket(seq *uint8, p *packet, client *(net.Conn)) bool {
 	log.Println("Sent a user info packet to", (*client).RemoteAddr().String())
 	//ServerList部分
 	onServerList(seq, p, client)
-	/*(*p).id = TypeServerList
-	rst1 := BytesCombine(BuildHeader(seq, *p), BuildServerList())
-	WriteLen(&rst1) //写入长度
-	rst = BytesCombine(rst, rst1)
-	(*client).Write(rst) //发送UserStart消息
-	log.Println("Sent a server list packet to", (*client).RemoteAddr().String())*/
 	//Inventory部分
 
 	return true

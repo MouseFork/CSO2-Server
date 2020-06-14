@@ -46,3 +46,17 @@ func startHolePunchServer(server *(net.UDPConn)) {
 func RecvHolePunchMessage(holeclient net.Conn) {
 
 }
+
+func UDPBuild(seq *uint8, p packet, isHost uint8, userid uint32, ip uint32, port uint16) []byte {
+	p.id = TypeUdp
+	rst := BuildHeader(seq, p)
+	buf := make([]byte, 12)
+	offset := 0
+	WriteUint8(&buf, 1, &offset)
+	WriteUint8(&buf, isHost, &offset)
+	WriteUint32(&buf, userid, &offset)
+	WriteUint32BE(&buf, ip, &offset)
+	WriteUint16(&buf, port, &offset)
+	rst = BytesCombine(rst, buf)
+	return rst
+}

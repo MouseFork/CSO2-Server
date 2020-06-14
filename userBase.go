@@ -100,7 +100,10 @@ type user struct {
 	currentTeam               uint8
 	currentstatus             uint8
 	currentIsIngame           bool
-
+	currentSequence           *uint8
+	currentExternalIpAddress  uint32
+	currentServerPort         uint16
+	currentClientPort         uint16
 	//仓库信息
 	//inventory userInventory
 }
@@ -215,36 +218,66 @@ func (u user) isVIP() bool {
 }
 
 func (u *user) setID(id uint32) {
+	if u == nil {
+		return
+	}
 	(*u).userid = id
 }
 
 func (u *user) setUserName(name []byte) {
+	if u == nil {
+		return
+	}
 	(*u).loginName = name
 	(*u).username = name
 }
 
 func (u *user) setUserChannelServer(id uint8) {
+	if u == nil {
+		return
+	}
 	(*u).currentChannelServerIndex = id
 }
 
 func (u *user) setUserChannel(id uint8) {
+	if u == nil {
+		return
+	}
 	(*u).currentChannelIndex = id
 }
 
 func (u *user) setUserRoom(id uint16) {
+	if u == nil {
+		return
+	}
 	(*u).currentRoomId = id
 }
 
 func (u *user) quitChannel() {
+	if u == nil {
+		return
+	}
 	(*u).currentChannelIndex = 0
 }
 
 func (u *user) quitRoom() {
+	if u == nil {
+		return
+	}
 	(*u).currentRoomId = 0
 	(*u).currentTeam = Unknown
 	(*u).currentstatus = UserNotReady
 }
 
+func (u *user) setUserStatus(status uint8) {
+	if u == nil {
+		return
+	}
+	if status <= 2 &&
+		status >= 0 {
+		(*u).currentstatus = status
+	}
+}
 func getNewUser() user {
 	return user{
 		0,
@@ -324,6 +357,10 @@ func getNewUser() user {
 		0,      //currentTeam
 		0,      //currentstatus
 		false,  //currentIsIngame
+		nil,    //sequence
+		0,      //ip
+		0,      //srvPort
+		0,      //cliPort
 	}
 }
 
@@ -394,4 +431,17 @@ func (u user) getUserTeam() uint8 {
 
 func (u user) isUserReady() bool {
 	return u.currentstatus == UserReady
+}
+
+func (u *user) setUserIngame(ingame bool) {
+	if u == nil {
+		return
+	}
+	(*u).currentIsIngame = ingame
+	if ingame {
+		(*u).currentstatus = UserIngame
+	} else {
+		(*u).currentstatus = UserNotReady
+	}
+
 }
