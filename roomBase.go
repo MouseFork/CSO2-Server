@@ -122,7 +122,7 @@ const (
 	DefaultCountdownNum = 7
 )
 
-//房间信息,用于请求频道
+//房间信息
 type roomInfo struct {
 	id    uint16
 	flags uint64
