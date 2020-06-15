@@ -40,7 +40,7 @@ func onLoginPacket(seq *uint8, p *packet, client *(net.Conn)) bool {
 	//获得用户数据，待定
 	u := getUserByLogin(pkt)
 	if u.userid <= 0 {
-		log.Println("User", string(pkt.gameUsername), "from", (*client).RemoteAddr().String(), "login failed !")
+		log.Println("Error : User", string(pkt.gameUsername), "from", (*client).RemoteAddr().String(), "login failed !")
 		(*client).Close()
 	}
 	u.currentConnection = *client
@@ -48,7 +48,7 @@ func onLoginPacket(seq *uint8, p *packet, client *(net.Conn)) bool {
 	u.currentSequence = seq
 	//把用户加入用户管理器
 	if !addUser(&u) {
-		log.Println("User", string(pkt.gameUsername), "from", (*client).RemoteAddr().String(), "login failed !")
+		log.Println("Error : User", string(pkt.gameUsername), "from", (*client).RemoteAddr().String(), "login failed !")
 		(*client).Close()
 	}
 	//UserStart部分
@@ -68,7 +68,27 @@ func onLoginPacket(seq *uint8, p *packet, client *(net.Conn)) bool {
 	//ServerList部分
 	onServerList(seq, p, client)
 	//Inventory部分
-
+	pkt.BasePacket.id = TypeInventory_Create
+	rst = BytesCombine(BuildHeader(seq, pkt.BasePacket), BuildInventoryInfo(u))
+	sendPacket(rst, *client)
+	pkt.BasePacket.id = TypeInventory_Add
+	rst = BytesCombine(BuildHeader(seq, pkt.BasePacket), BuildInventoryInfo(u))
+	sendPacket(rst, *client)
+	//unlock
+	pkt.BasePacket.id = 0x5a
+	rst = BytesCombine(BuildHeader(seq, pkt.BasePacket), BuildUnlockReply())
+	sendPacket(rst, *client)
+	//偏好装备
+	pkt.BasePacket.id = TypeFavorite
+	rst = BytesCombine(BuildHeader(seq, pkt.BasePacket), BuildCosmetics(u.inventory))
+	sendPacket(rst, *client)
+	rst = BytesCombine(BuildHeader(seq, pkt.BasePacket), BuildLoadout(u.inventory))
+	sendPacket(rst, *client)
+	//购买菜单
+	pkt.BasePacket.id = TypeOption
+	rst = BytesCombine(BuildHeader(seq, pkt.BasePacket), BuildBuyMenu(u.inventory))
+	sendPacket(rst, *client)
+	log.Println("Sent a user inventory packet to", (*client).RemoteAddr().String())
 	return true
 }
 

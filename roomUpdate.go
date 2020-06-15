@@ -65,14 +65,14 @@ func onUpdateRoom(seq *uint8, p packet, client net.Conn) {
 	//检索数据报
 	var pkt upSettingReq
 	if !praseUpdateRoomPacket(p, &pkt) {
-		log.Println("Client from", client.RemoteAddr().String(), "sent a illegal packet !")
+		log.Println("Error : Client from", client.RemoteAddr().String(), "sent a illegal packet !")
 		return
 	}
 	//找到对应用户
 	uPtr := getUserFromConnection(client)
 	if uPtr == nil ||
 		uPtr.userid <= 0 {
-		log.Println("Client from", client.RemoteAddr().String(), "try to toggle ready status but not in server !")
+		log.Println("Error : Client from", client.RemoteAddr().String(), "try to toggle ready status but not in server !")
 		return
 	}
 	//检查用户是不是房主
@@ -81,21 +81,21 @@ func onUpdateRoom(seq *uint8, p packet, client net.Conn) {
 		uPtr.getUserRoomID())
 	if curroom == nil ||
 		curroom.id <= 0 {
-		log.Println("user:", string(uPtr.username), "try to update a null room but in server !")
+		log.Println("Error : User:", string(uPtr.username), "try to update a null room but in server !")
 		return
 	}
 	if curroom.hostUserID != uPtr.userid {
-		log.Println("user:", string(uPtr.username), "try to update a room but isn't host !")
+		log.Println("Error : User:", string(uPtr.username), "try to update a room but isn't host !")
 		return
 	}
 	//检查用户所在房间
 	if curroom.id != uPtr.currentRoomId {
-		log.Println("user:", string(uPtr.username), "try to update a room but not in !")
+		log.Println("Error : User:", string(uPtr.username), "try to update a room but not in !")
 		return
 	}
 	//检查当前是不是正在倒计时
 	if (*curroom).isGlobalCountdownInProgress() {
-		log.Println("user:", string(uPtr.username), "try to update a room but is counting !")
+		log.Println("Error : User:", string(uPtr.username), "try to update a room but is counting !")
 		return
 	}
 	//更新房间设置

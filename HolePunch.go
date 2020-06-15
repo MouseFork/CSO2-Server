@@ -24,7 +24,7 @@ type InUDPmsg struct {
 
 func startHolePunchServer(server *(net.UDPConn)) {
 	defer server.Close()
-	fmt.Println("Server holepunch is running at", "[AnyAdapter]:"+strconv.Itoa(HOLEPUNCHPORT))
+	fmt.Println("Server UDPholepunch is running at", "[AnyAdapter]:"+strconv.Itoa(HOLEPUNCHPORT))
 	data := make([]byte, 1024)
 	for {
 		n, remoteAddr, err := server.ReadFromUDP(data)

@@ -118,6 +118,7 @@ func RecvMessage(client net.Conn) {
 				onRoomRequest(&seq, pkt, client)
 			case TypeHost:
 				log.Println("Recived a Host request packet from", client.RemoteAddr().String())
+				onHost(&seq, pkt, client)
 			case TypeFavorite:
 				log.Println("Recived a favorite request packet from", client.RemoteAddr().String())
 			default:

@@ -30,8 +30,9 @@ type serverManager struct {
 //处理请求服务器列表
 func onServerList(seq *uint8, p *packet, client *(net.Conn)) {
 	uPtr := getUserFromConnection(*client)
-	if uPtr.userid <= 0 {
-		log.Println("A unknow Client from", (*client).RemoteAddr().String(), "request a ChannelList !")
+	if uPtr == nil ||
+		uPtr.userid <= 0 {
+		log.Println("Error : A unknow Client from", (*client).RemoteAddr().String(), "request a ChannelList !")
 		return
 	}
 	(*p).id = TypeServerList
@@ -75,7 +76,7 @@ func newMainServer() serverManager {
 	}
 	chl := newChannelServer([]byte(DefalutServerName))
 	if !addChannelServer(&srvmgr, &chl) {
-		log.Fatalln("Unable to initializing main server !")
+		log.Fatalln("Error : Unable to initializing main server !")
 		os.Exit(-1)
 	}
 	return srvmgr
@@ -84,16 +85,16 @@ func newMainServer() serverManager {
 //主服务器里加频道服务器
 func addChannelServer(dest *serverManager, src *channelServer) bool {
 	if (*dest).serverNum > MAXSERVERNUM {
-		log.Fatalln("ChannelServer is too much ! Unable to add more !")
+		log.Fatalln("Error : ChannelServer is too much ! Unable to add more !")
 		return false
 	}
 	if (*src).serverIndex == 0 {
-		log.Fatalln("ID of ChannelServer is illegal !")
+		log.Fatalln("Error : ID of ChannelServer is illegal !")
 		return false
 	}
 	for _, v := range dest.servers {
 		if v.serverIndex == src.serverIndex {
-			log.Fatalln("ChannelServer is already existed in MainServer!")
+			log.Fatalln("Error : ChannelServer is already existed in MainServer!")
 			return false
 		}
 	}
@@ -114,7 +115,7 @@ func newChannelServer(name []byte) channelServer {
 	}
 	chl := newChannelInfo([]byte(DefalutChannelName), chlsrv)
 	if !addChannel(&chlsrv, &chl) {
-		log.Fatalln("Unable to initializing main server !")
+		log.Fatalln("Error : Unable to initializing main server !")
 		return channelServer{
 			0,
 			1,
@@ -130,16 +131,16 @@ func newChannelServer(name []byte) channelServer {
 //频道服务器里加频道
 func addChannel(dest *channelServer, src *channelInfo) bool {
 	if (*dest).channelCount > MAXCHANNELNUM {
-		log.Fatalln("Channel is too much ! Unable to add more !")
+		log.Fatalln("Error : Channel is too much ! Unable to add more !")
 		return false
 	}
 	if (*src).channelID == 0 {
-		log.Fatalln("ID of Channel is illegal !")
+		log.Fatalln("Error : ID of Channel is illegal !")
 		return false
 	}
 	for _, v := range dest.channels {
 		if v.channelID == src.channelID {
-			log.Fatalln("Channel is already existed in ChannelServer!")
+			log.Fatalln("Error : Channel is already existed in ChannelServer!")
 			return false
 		}
 	}
@@ -151,7 +152,7 @@ func addChannel(dest *channelServer, src *channelInfo) bool {
 //新的频道服务器ID
 func getNewChannelServerID() uint8 {
 	if MainServer.serverNum > MAXSERVERNUM {
-		log.Fatalln("ChannelServer is too much ! Unable to create more !")
+		log.Fatalln("Error : ChannelServer is too much ! Unable to create more !")
 		//ID=0 是非法的
 		return 0
 	}

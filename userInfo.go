@@ -347,7 +347,7 @@ func (u user) buildUserNetInfo() []byte {
 	cliadr := u.currentConnection.RemoteAddr().String()
 	externalIPAddress, err := IPToUint32(cliadr[:slideIP(cliadr)])
 	if err != nil {
-		log.Fatalln("Prasing externalIpAddress error !")
+		log.Fatalln("Error : Prasing externalIpAddress error !")
 		return buf
 	}
 	WriteUint32BE(&buf, externalIPAddress, &offset) //externalIpAddress

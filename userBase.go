@@ -105,21 +105,21 @@ type user struct {
 	currentServerPort         uint16
 	currentClientPort         uint16
 	//仓库信息
-	//inventory userInventory
+	inventory userInventory
 }
 
 func addUser(src *user) bool {
 	if (*src).userid == 0 {
-		log.Fatalln("ID of User", (*src).username, "is illegal !")
+		log.Fatalln("Error : ID of User", (*src).username, "is illegal !")
 		return false
 	}
 	if UserManager.userNum > MAXUSERNUM {
-		log.Fatalln("Online users is too more to login !")
+		log.Fatalln("Error : Online users is too more to login !")
 		return false
 	}
 	for _, v := range UserManager.users {
 		if v.userid == (*src).userid {
-			log.Fatalln("User is already logged in !")
+			log.Fatalln("Error : User is already logged in !")
 			return false
 		}
 	}
@@ -130,11 +130,11 @@ func addUser(src *user) bool {
 
 func delUser(src *user) bool {
 	if (*src).userid == 0 {
-		log.Fatalln("ID of User", (*src).username, "is illegal !")
+		log.Fatalln("Error : ID of User", (*src).username, "is illegal !")
 		return false
 	}
 	if UserManager.userNum == 0 {
-		log.Fatalln("There is no online user !")
+		log.Fatalln("Error : There is no online user !")
 		return false
 	}
 	for i, v := range UserManager.users {
@@ -149,7 +149,7 @@ func delUser(src *user) bool {
 
 func delUserWithConn(con net.Conn) bool {
 	if UserManager.userNum == 0 {
-		log.Fatalln("There is no online user !")
+		log.Fatalln("Error : There is no online user !")
 		return false
 	}
 	for i, v := range UserManager.users {
@@ -343,25 +343,26 @@ func getNewUser() user {
 			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00,
 			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3E, 0x00, 0x00}, // unlockedAvatars
-		0,      //viplevel
-		0,      //vipXp
-		0x02FB, //skillHumanCurXp
-		0x19AC, //skillHumanMaxXp
-		0,      //skillHumanPoints
-		0,      //skillZombieCurXp
-		0x16F6, //skillZombieMaxXp
-		0,      //skillZombiePoints
-		nil,    //connection
-		1,      //serverid
-		0,      //channelid
-		0,      //roomid
-		0,      //currentTeam
-		0,      //currentstatus
-		false,  //currentIsIngame
-		nil,    //sequence
-		0,      //ip
-		0,      //srvPort
-		0,      //cliPort
+		0,                        //viplevel
+		0,                        //vipXp
+		0x02FB,                   //skillHumanCurXp
+		0x19AC,                   //skillHumanMaxXp
+		0,                        //skillHumanPoints
+		0,                        //skillZombieCurXp
+		0x16F6,                   //skillZombieMaxXp
+		0,                        //skillZombiePoints
+		nil,                      //connection
+		1,                        //serverid
+		0,                        //channelid
+		0,                        //roomid
+		0,                        //currentTeam
+		0,                        //currentstatus
+		false,                    //currentIsIngame
+		nil,                      //sequence
+		0,                        //ip
+		0,                        //srvPort
+		0,                        //cliPort
+		createNewUserInventory(), //仓库
 	}
 }
 

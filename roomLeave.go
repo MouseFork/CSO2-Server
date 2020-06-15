@@ -10,7 +10,7 @@ func onLeaveRoom(seq *uint8, p packet, client net.Conn) {
 	uPtr := getUserFromConnection(client)
 	if uPtr == nil ||
 		uPtr.userid <= 0 {
-		log.Println("Client from", client.RemoteAddr().String(), "try to leave room but not in server !")
+		log.Println("Error : Client from", client.RemoteAddr().String(), "try to leave room but not in server !")
 		return
 	}
 	//找到玩家的房间
@@ -19,13 +19,13 @@ func onLeaveRoom(seq *uint8, p packet, client net.Conn) {
 		uPtr.getUserRoomID())
 	if rm == nil ||
 		rm.id <= 0 {
-		log.Println("User:", string(uPtr.username), "try to leave a null room !")
+		log.Println("Error : User:", string(uPtr.username), "try to leave a null room !")
 		return
 	}
 	//检查玩家游戏状态，准备情况下并且开始倒计时了，那么就不允许离开房间
 	if uPtr.isUserReady() &&
 		rm.isGlobalCountdownInProgress() {
-		log.Println("User:", string(uPtr.username), "try to leave room but is started !")
+		log.Println("Error : User:", string(uPtr.username), "try to leave room but is started !")
 		return
 	}
 	//房间移除玩家

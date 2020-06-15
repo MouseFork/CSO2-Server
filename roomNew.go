@@ -32,26 +32,26 @@ func onNewRoom(seq *uint8, p packet, client net.Conn) {
 	//检索房间数据报
 	var roompkt InNewRoomPacket
 	if !praseNewRoomQuest(p, &roompkt) {
-		log.Println("Cannot prase a new room request !")
+		log.Println("Error : Cannot prase a new room request !")
 		return
 	}
 	//找到对应用户
 	uPtr := getUserFromConnection(client)
 	if uPtr == nil ||
 		uPtr.userid <= 0 {
-		log.Println("A user request a new room but not in server!")
+		log.Println("Error : A user request a new room but not in server!")
 		return
 	}
 	//检索玩家当前房间
 	if uPtr.currentRoomId > 0 {
-		log.Println(uPtr.username, "request a new room but already in a room!")
+		log.Println("Error :", uPtr.username, "request a new room but already in a room!")
 		uPtr.quitRoom()
 		return
 	}
 	//创建房间
 	rm := CreateRoom(roompkt, uPtr)
 	if rm.id <= 0 {
-		log.Println(uPtr.username, "cannot create a new room !")
+		log.Println("Error :", uPtr.username, "cannot create a new room !")
 		return
 	}
 	//把房间加进服务器
@@ -63,7 +63,7 @@ func onNewRoom(seq *uint8, p packet, client net.Conn) {
 	//修改用户相关信息
 	u := rm.roomGetUser(uPtr.userid)
 	if u == nil {
-		log.Println("Cannot add host ", uPtr.username, "to new room !")
+		log.Println("Error : Cannot add host ", uPtr.username, "to new room !")
 		return
 	}
 	uPtr.setUserRoom(rm.id)

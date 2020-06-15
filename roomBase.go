@@ -120,19 +120,6 @@ const (
 	//最大房间数
 	MAXROOMNUMS         = 1024
 	DefaultCountdownNum = 7
-
-	//HOST操作
-	GameStart         = 0 // when a host starts a new game
-	HostJoin          = 1 // when someone joins some host's game
-	HostStop          = 3
-	LeaveResultWindow = 4
-
-	// logging packet types
-	OnGameEnd = 21
-
-	SetInventory = 101 // there are 2 or 3 other host packet types that send this
-	SetLoadout   = 107
-	SetBuyMenu   = 111
 )
 
 //房间信息
@@ -216,7 +203,6 @@ type lobbyJoinRoom struct {
 func onRoomRequest(seq *uint8, p packet, client net.Conn) {
 	var pkt inRoomPaket
 	if praseRoomPacket(p, &pkt) {
-		getUserFromConnection(client)
 		switch pkt.InRoomType {
 		case NewRoomRequest:
 			log.Println("Recived a new room request from", client.RemoteAddr().String())
@@ -246,7 +232,7 @@ func onRoomRequest(seq *uint8, p packet, client net.Conn) {
 			log.Println("Recived a unknown room packet from", client.RemoteAddr().String())
 		}
 	} else {
-		log.Println("Recived a illegal room packet from", client.RemoteAddr().String())
+		log.Println("Error : Recived a illegal room packet from", client.RemoteAddr().String())
 	}
 }
 
@@ -261,7 +247,7 @@ func praseRoomPacket(p packet, dest *inRoomPaket) bool {
 //getNewRoomID() 暂定
 func getNewRoomID(chl channelInfo) uint16 {
 	if chl.roomNum > MAXROOMNUMS {
-		log.Fatalln("Room is too much ! Unable to create more !")
+		log.Fatalln("Error : Room is too much ! Unable to create more !")
 		//ID=0 是非法的
 		return 0
 	}
@@ -403,13 +389,13 @@ func (rm *roomInfo) progressCountdown(num uint8) {
 	}
 	(*rm).countdown--
 	if rm.countdown != num {
-		log.Fatalln("Host is counting", num, "but room is", rm.countdown)
+		log.Fatalln("Error : Host is counting", num, "but room is", rm.countdown)
 	}
 }
 
 func (rm *roomInfo) getCountdown() uint8 {
 	if rm.countingDown == false {
-		log.Fatalln("tried to get countdown without counting down")
+		log.Fatalln("Error : tried to get countdown without counting down")
 		return 0
 	}
 	if rm.countdown > DefaultCountdownNum ||

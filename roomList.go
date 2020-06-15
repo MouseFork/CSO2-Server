@@ -10,13 +10,13 @@ func onRoomList(seq *uint8, p *packet, client net.Conn) {
 	if praseChannelRequest(*p, &pkt) {
 		uPtr := getUserFromConnection(client)
 		if uPtr.userid <= 0 {
-			log.Println("A unknow Client from", client.RemoteAddr().String(), "request a RoomList !")
+			log.Println("Error : A unknow Client from", client.RemoteAddr().String(), "request a RoomList !")
 			return
 		}
 		//发送频道请求返回包
 		chlsrv := getChannelServerWithID(pkt.channelServerIndex)
 		if chlsrv == nil {
-			log.Println("Client from", client.RemoteAddr().String(), "request a unknown channelServer !")
+			log.Println("Error : Client from", client.RemoteAddr().String(), "request a unknown channelServer !")
 			return
 		}
 		rst := BuildLobbyReply(seq, *p)
@@ -25,7 +25,7 @@ func onRoomList(seq *uint8, p *packet, client net.Conn) {
 		//发送频道请求所得房间列表
 		chl := getChannelWithID(pkt.channelIndex, *chlsrv)
 		if chl == nil {
-			log.Println("Client from", client.RemoteAddr().String(), "request a unknown channel !")
+			log.Println("Error : Client from", client.RemoteAddr().String(), "request a unknown channel !")
 			return
 		}
 		rst = BuildRoomList(seq, *p, *chl)

@@ -19,14 +19,14 @@ func onGameStartCountdown(p packet, client net.Conn) {
 	//检索数据包
 	var pkt InRoomCountdownPacket
 	if !praseRoomCountdownPacket(p, &pkt) {
-		log.Println("Client from", client.RemoteAddr().String(), "sent a error Countdown packet !")
+		log.Println("Error : Client from", client.RemoteAddr().String(), "sent a error Countdown packet !")
 		return
 	}
 	//找到对应用户
 	uPtr := getUserFromConnection(client)
 	if uPtr == nil ||
 		uPtr.userid <= 0 {
-		log.Println("Client from", client.RemoteAddr().String(), "try to start counting but not in server !")
+		log.Println("Error : Client from", client.RemoteAddr().String(), "try to start counting but not in server !")
 		return
 	}
 	//检查用户是不是房主
@@ -35,21 +35,21 @@ func onGameStartCountdown(p packet, client net.Conn) {
 		uPtr.getUserRoomID())
 	if curroom == nil ||
 		curroom.id <= 0 {
-		log.Println("User:", string(uPtr.username), "try to start counting in a null room !")
+		log.Println("Error : User:", string(uPtr.username), "try to start counting in a null room !")
 		return
 	}
 	if curroom.hostUserID != uPtr.userid {
-		log.Println("User:", string(uPtr.username), "try to start counting but is not the host !")
+		log.Println("Error : User:", string(uPtr.username), "try to start counting but is not the host !")
 		return
 	}
 	//检查用户所在房间
 	if curroom.id != uPtr.currentRoomId {
-		log.Println("User:", string(uPtr.username), "try to start counting but in another room !")
+		log.Println("Error : User:", string(uPtr.username), "try to start counting but in another room !")
 		return
 	}
 	//检查当前游戏模式
 	if !curroom.canStartGame() {
-		log.Println("User:", string(uPtr.username), "try to start countdown but is illegal !")
+		log.Println("Error : User:", string(uPtr.username), "try to start countdown but is illegal !")
 		return
 	}
 	//检查是否应该继续倒计时
