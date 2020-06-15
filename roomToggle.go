@@ -19,16 +19,16 @@ func onToggleReady(seq *uint8, p packet, client net.Conn) {
 		uPtr.getUserRoomID())
 	if curroom == nil ||
 		curroom.id <= 0 {
-		log.Println("User:", uPtr.username, "try to toggle in a null room !")
+		log.Println("User:", string(uPtr.username), "try to toggle in a null room !")
 		return
 	}
 	if curroom.hostUserID == uPtr.userid {
-		log.Println("User:", uPtr.username, "try to toggle but is host !")
+		log.Println("User:", string(uPtr.username), "try to toggle but is host !")
 		return
 	}
 	//检查用户所在房间
 	if curroom.id != uPtr.currentRoomId {
-		log.Println("User:", uPtr.username, "try to toggle but in another room !")
+		log.Println("User:", string(uPtr.username), "try to toggle but in another room !")
 		return
 	}
 	u := curroom.roomGetUser(uPtr.userid)
@@ -36,11 +36,11 @@ func onToggleReady(seq *uint8, p packet, client net.Conn) {
 	if uPtr.currentstatus == UserReady {
 		uPtr.setUserStatus(UserNotReady)
 		u.setUserStatus(UserNotReady)
-		log.Println("User:", uPtr.username, "readied in room")
+		log.Println("User:", string(uPtr.username), "readied in room")
 	} else {
 		uPtr.setUserStatus(UserReady)
 		u.setUserStatus(UserReady)
-		log.Println("User:", uPtr.username, "unreadied in room")
+		log.Println("User:", string(uPtr.username), "unreadied in room")
 	}
 	//对房间所有玩家发送该玩家的状态
 	for _, v := range curroom.users {

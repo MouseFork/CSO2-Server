@@ -19,13 +19,13 @@ func onLeaveRoom(seq *uint8, p packet, client net.Conn) {
 		uPtr.getUserRoomID())
 	if rm == nil ||
 		rm.id <= 0 {
-		log.Println("User:", uPtr.username, "try to leave a null room !")
+		log.Println("User:", string(uPtr.username), "try to leave a null room !")
 		return
 	}
 	//检查玩家游戏状态，准备情况下并且开始倒计时了，那么就不允许离开房间
 	if uPtr.isUserReady() &&
 		rm.isGlobalCountdownInProgress() {
-		log.Println("User:", uPtr.username, "try to leave room but is started !")
+		log.Println("User:", string(uPtr.username), "try to leave room but is started !")
 		return
 	}
 	//房间移除玩家
@@ -66,7 +66,7 @@ func onLeaveRoom(seq *uint8, p packet, client net.Conn) {
 	uPtr.quitRoom()
 	//发送房间列表给玩家
 	onRoomList(seq, &p, client)
-	log.Println("User:", uPtr.username, "left room")
+	log.Println("User:", string(uPtr.username), "left room")
 }
 
 func BuildUserLeave(id uint32) []byte {

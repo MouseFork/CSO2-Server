@@ -19,17 +19,17 @@ func onGameStart(seq *uint8, p packet, client net.Conn) {
 		uPtr.getUserRoomID())
 	if rm == nil ||
 		rm.id <= 0 {
-		log.Println("User:", uPtr.username, "try to start game in a null room !")
+		log.Println("User:", string(uPtr.username), "try to start game in a null room !")
 		return
 	}
 	if rm.hostUserID != uPtr.userid {
-		log.Println("User:", uPtr.username, "try to start game but is not the host !")
+		log.Println("User:", string(uPtr.username), "try to start game but is not the host !")
 		return
 	}
 	//房主开始游戏,设置房间状态
 	u := rm.roomGetUser(uPtr.userid)
 	if u == nil {
-		log.Println("User:", uPtr.username, "try to start game but is null in room !")
+		log.Println("User:", string(uPtr.username), "try to start game but is null in room !")
 		return
 	}
 	rm.stopCountdown()
@@ -69,7 +69,7 @@ func onGameStart(seq *uint8, p packet, client net.Conn) {
 	p.id = TypeHost
 	rst := BytesCombine(BuildHeader(uPtr.currentSequence, p), BuildGameStart(u.userid))
 	sendPacket(rst, uPtr.currentConnection)
-	log.Println("User:", uPtr.username, "started game ")
+	log.Println("User:", string(uPtr.username), "started game ")
 }
 
 func BuildJoinHost(id uint32) []byte {

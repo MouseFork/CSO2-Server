@@ -241,6 +241,7 @@ func onRoomRequest(seq *uint8, p packet, client net.Conn) {
 			log.Println("Recived a set user team request from", client.RemoteAddr().String())
 		case GameStartCountdownRequest:
 			log.Println("Recived a begin start game request from", client.RemoteAddr().String())
+			onGameStartCountdown(p, client)
 		default:
 			log.Println("Recived a unknown room packet from", client.RemoteAddr().String())
 		}
@@ -340,4 +341,80 @@ func (rm *roomInfo) setStatus(status uint8) {
 		(*rm).setting.status = status
 		(*rm).setting.isIngame = status - 1
 	}
+}
+
+func (rm roomInfo) canStartGame() bool {
+	switch rm.setting.gameModeID {
+	case deathmatch:
+	case original:
+	case originalmr:
+	case casualbomb:
+	case casualoriginal:
+	case eventmod01:
+	case eventmod02:
+	case diy:
+	case campaign1:
+	case campaign2:
+	case campaign3:
+	case campaign4:
+	case campaign5:
+	case tdm_small:
+	case de_small:
+	case madcity:
+	case madcity_team:
+	case gunteamdeath:
+	case gunteamdeath_re:
+	case stealth:
+	case teamdeath:
+	case teamdeath_mutation:
+		if rm.numPlayers < 2 {
+			return false
+		}
+	case giant:
+	case hide:
+	case hide2:
+	case hide_match:
+	case hide_origin:
+	case hide_Item:
+	case hide_multi:
+	case ghost:
+	case pig:
+	case tag:
+	case zombie:
+	case zombiecraft:
+	case zombie_commander:
+	case zombie_prop:
+	case zombie_zeta:
+		if rm.numPlayers < 2 {
+			return false
+		}
+	default:
+	}
+	return true
+}
+
+func (rm *roomInfo) progressCountdown(num uint8) {
+	if rm.countdown > DefaultCountdownNum ||
+		rm.countdown < 0 {
+		(*rm).countdown = 0
+	}
+	if rm.countingDown == false {
+		(*rm).countingDown = true
+	}
+	(*rm).countdown--
+	if rm.countdown != num {
+		log.Fatalln("Host is counting", num, "but room is", rm.countdown)
+	}
+}
+
+func (rm *roomInfo) getCountdown() uint8 {
+	if rm.countingDown == false {
+		log.Fatalln("tried to get countdown without counting down")
+		return 0
+	}
+	if rm.countdown > DefaultCountdownNum ||
+		rm.countdown < 0 {
+		(*rm).countdown = 0
+	}
+	return rm.countdown
 }

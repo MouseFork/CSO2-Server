@@ -80,7 +80,6 @@ func PraseLoginPacket(p *loginPacket) {
 	lenOfData := (*p).BasePacket.datalen
 	offset := 5
 
-	log.Println("user len", (*p).BasePacket.length)
 	(*p).lenOfNexonUsername = (*p).BasePacket.data[offset]
 	offset++
 

@@ -267,6 +267,7 @@ func (u *user) quitRoom() {
 	(*u).currentRoomId = 0
 	(*u).currentTeam = Unknown
 	(*u).currentstatus = UserNotReady
+	(*u).currentIsIngame = false
 }
 
 func (u *user) setUserStatus(status uint8) {

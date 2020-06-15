@@ -16,6 +16,8 @@ Counter-Strike Online 2 Server
 
 ![Image](https://github.com/KouKouChan/CSO2-Server/blob/master/photos/channel.png)
 
+![Image](https://github.com/KouKouChan/CSO2-Server/blob/master/photos/ingame.png)
+
 ### Build
 
     1. open the folder

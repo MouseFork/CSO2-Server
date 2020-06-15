@@ -81,21 +81,21 @@ func onUpdateRoom(seq *uint8, p packet, client net.Conn) {
 		uPtr.getUserRoomID())
 	if curroom == nil ||
 		curroom.id <= 0 {
-		log.Println("user:", uPtr.username, "try to update a null room but in server !")
+		log.Println("user:", string(uPtr.username), "try to update a null room but in server !")
 		return
 	}
 	if curroom.hostUserID != uPtr.userid {
-		log.Println("user:", uPtr.username, "try to update a room but isn't host !")
+		log.Println("user:", string(uPtr.username), "try to update a room but isn't host !")
 		return
 	}
 	//检查用户所在房间
 	if curroom.id != uPtr.currentRoomId {
-		log.Println("user:", uPtr.username, "try to update a room but not in !")
+		log.Println("user:", string(uPtr.username), "try to update a room but not in !")
 		return
 	}
 	//检查当前是不是正在倒计时
 	if (*curroom).isGlobalCountdownInProgress() {
-		log.Println("user:", uPtr.username, "try to update a room but is counting !")
+		log.Println("user:", string(uPtr.username), "try to update a room but is counting !")
 		return
 	}
 	//更新房间设置

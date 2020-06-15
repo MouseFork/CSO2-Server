@@ -14,6 +14,8 @@ CSOL2 服务器
 
 ![Image](https://github.com/KouKouChan/CSO2-Server/blob/master/photos/channel.png)
 
+![Image](https://github.com/KouKouChan/CSO2-Server/blob/master/photos/ingame.png)
+
 ### 已完成的功能
 
     登录、频道
