@@ -10,11 +10,11 @@ CSOL2 服务器
 
 ![Image](./photos/main.png)
 
-![Image](https://github.com/KouKouChan/CSO2-Server/blob/master/photos/intro.png)
+![Image](./photos/intro.png)
 
-![Image](https://github.com/KouKouChan/CSO2-Server/blob/master/photos/channel.png)
+![Image](./photos/channel.png)
 
-![Image](https://github.com/KouKouChan/CSO2-Server/blob/master/photos/ingame.png)
+![Image](./photos/ingame.png)
 
 ### 已完成的功能
 
