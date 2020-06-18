@@ -21,17 +21,17 @@ func onGameStart(seq *uint8, p packet, client net.Conn) {
 		uPtr.getUserRoomID())
 	if rm == nil ||
 		rm.id <= 0 {
-		log.Println("Error : User:", string(uPtr.username), "try to start game in a null room !")
+		log.Println("Error : User", string(uPtr.username), "try to start game in a null room !")
 		return
 	}
 	if rm.hostUserID != uPtr.userid {
-		log.Println("Error : User:", string(uPtr.username), "try to start game but is not the host !")
+		log.Println("Error : User", string(uPtr.username), "try to start game but is not the host !")
 		return
 	}
 	//房主开始游戏,设置房间状态
 	u := rm.roomGetUser(uPtr.userid)
 	if u == nil {
-		log.Println("Error : User:", string(uPtr.username), "try to start game but is null in room !")
+		log.Println("Error : User", string(uPtr.username), "try to start game but is null in room !")
 		return
 	}
 	rm.stopCountdown()

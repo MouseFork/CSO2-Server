@@ -92,7 +92,7 @@ func RecvMessage(client net.Conn) {
 			}
 			var pkt packet
 			pkt.data = bytes
-			log.Println("Prasing a packet from", client.RemoteAddr().String())
+			//log.Println("Prasing a packet from", client.RemoteAddr().String())
 			pkt.PrasePacket()
 			if !pkt.IsGoodPacket {
 				log.Println("Recived a illegal packet from", client.RemoteAddr().String())

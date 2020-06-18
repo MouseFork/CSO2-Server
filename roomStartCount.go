@@ -37,31 +37,31 @@ func onGameStartCountdown(p packet, client net.Conn) {
 		uPtr.getUserRoomID())
 	if curroom == nil ||
 		curroom.id <= 0 {
-		log.Println("Error : User:", string(uPtr.username), "try to start counting in a null room !")
+		log.Println("Error : User", string(uPtr.username), "try to start counting in a null room !")
 		return
 	}
 	if curroom.hostUserID != uPtr.userid {
-		log.Println("Error : User:", string(uPtr.username), "try to start counting but is not the host !")
+		log.Println("Error : User", string(uPtr.username), "try to start counting but is not the host !")
 		return
 	}
 	//检查用户所在房间
 	if curroom.id != uPtr.currentRoomId {
-		log.Println("Error : User:", string(uPtr.username), "try to start counting but in another room !")
+		log.Println("Error : User", string(uPtr.username), "try to start counting but in another room !")
 		return
 	}
 	//检查当前游戏模式
 	if !curroom.canStartGame() {
-		log.Println("Error : User:", string(uPtr.username), "try to start countdown but is illegal !")
+		log.Println("Error : User", string(uPtr.username), "try to start countdown but is illegal !")
 		return
 	}
 	//检查是否应该继续倒计时
 	should := pkt.shouldCountdown()
 	if should {
 		curroom.progressCountdown(pkt.count)
-		log.Println("User:", string(uPtr.username), "countdown at", curroom.getCountdown(), "host is", pkt.count)
+		log.Println("User", string(uPtr.username), "countdown at", curroom.getCountdown(), "host is", pkt.count)
 	} else {
 		curroom.stopCountdown()
-		log.Println("User:", string(uPtr.username), "cancled room countdown")
+		log.Println("User", string(uPtr.username), "cancled room countdown")
 	}
 	//所有玩家发送倒计时数据
 	for _, v := range curroom.users {

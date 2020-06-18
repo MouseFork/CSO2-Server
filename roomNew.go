@@ -56,13 +56,11 @@ func onNewRoom(seq *uint8, p packet, client net.Conn) {
 		log.Println("Error :", uPtr.username, "cannot create a new room !")
 		return
 	}
-	//把房间加进服务器
-	if !addChannelRoom(rm,
-		uPtr.getUserChannelID(),
-		uPtr.getUserChannelServerID()) {
-		return
-	}
 	//修改用户相关信息
+	rm.hostUserID = uPtr.userid
+	rm.hostUserName = uPtr.username
+	rm.users = append(rm.users, *uPtr)
+	rm.numPlayers = 1
 	u := rm.roomGetUser(uPtr.userid)
 	if u == nil {
 		log.Println("Error : Cannot add host ", uPtr.username, "to new room !")
@@ -70,6 +68,16 @@ func onNewRoom(seq *uint8, p packet, client net.Conn) {
 	}
 	uPtr.setUserRoom(rm.id)
 	u.setUserRoom(rm.id)
+	uPtr.currentTeam = CounterTerrorist
+	uPtr.setUserStatus(UserNotReady)
+	u.currentTeam = CounterTerrorist
+	u.setUserStatus(UserNotReady)
+	//把房间加进服务器
+	if !addChannelRoom(rm,
+		uPtr.getUserChannelID(),
+		uPtr.getUserChannelServerID()) {
+		return
+	}
 	//生成返回数据报
 	p.id = TypeRoom
 	rst := append(BuildHeader(seq, p), OUTCreateAndJoin)
@@ -244,13 +252,12 @@ func CreateRoom(pkt InNewRoomPacket, u *user) roomInfo {
 	}
 	id := getNewRoomID(*chl)
 	rm.id = id
-	rm.hostUserID = u.userid
-	rm.hostUserName = u.username
-	rm.users = append(rm.users, *u)
+	rm.hostUserID = 0
+	rm.users = []user{}
 	rm.parentChannel = chl.channelID
 	rm.countingDown = false
 	rm.countdown = DefaultCountdownNum
-	rm.numPlayers = 1
+	rm.numPlayers = 0
 	rm.passwordProtected = 0
 	rm.unk13 = 0xD73DA43D
 	rm.unk14 = 0x9F31

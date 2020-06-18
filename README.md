@@ -14,7 +14,7 @@ CSOL2 服务器
 
 ![Image](./photos/channel.png)
 
-![Image](./photos/ingame.png)
+![Image](./photos/ingame.jpg)
 
 ### 已完成的功能
 
