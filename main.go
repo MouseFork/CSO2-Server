@@ -46,7 +46,7 @@ func main() {
 		os.Exit(-1)
 	}
 	//初始化UDP
-	udpAddr, err := net.ResolveUDPAddr("udp", fmt.Sprintf(":%d", PORT))
+	udpAddr, err := net.ResolveUDPAddr("udp", fmt.Sprintf(":%d", HOLEPUNCHPORT))
 	if err != nil {
 		log.Fatal("Init udp addr error !\n")
 		os.Exit(-1)

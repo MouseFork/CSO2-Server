@@ -47,14 +47,14 @@ func onGameStart(seq *uint8, p packet, client net.Conn) {
 			if v.isUserReady() {
 				v.setUserIngame(true)
 				//连接到主机
-				rst = UDPBuild(v.currentSequence, p, 1, u.userid, u.currentExternalIpAddress, u.currentServerPort)
+				rst = UDPBuild(v.currentSequence, p, 1, u.userid, u.netInfo.ExternalIpAddress, u.netInfo.ExternalServerPort)
 				sendPacket(rst, v.currentConnection)
 				//加入主机
 				p.id = TypeHost
 				rst = BytesCombine(BuildHeader(v.currentSequence, p), BuildJoinHost(u.userid))
 				sendPacket(rst, v.currentConnection)
 				//给主机发送其他人的数据
-				rst = UDPBuild(seq, p, 0, v.userid, v.currentExternalIpAddress, v.currentClientPort)
+				rst = UDPBuild(seq, p, 0, v.userid, v.netInfo.ExternalIpAddress, v.netInfo.ExternalClientPort)
 				sendPacket(rst, uPtr.currentConnection)
 			}
 		}

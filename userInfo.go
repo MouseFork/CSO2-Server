@@ -1,8 +1,6 @@
 package main
 
 import (
-	"log"
-
 	. "github.com/KouKouChan/CSO2-Server/kerlong"
 )
 
@@ -350,19 +348,21 @@ func (u user) buildUserNetInfo() []byte {
 	WriteUint8(&buf, u.getUserTeam(), &offset)
 	WriteUint8(&buf, 0, &offset)
 	WriteUint8(&buf, 0, &offset)
-	cliadr := u.currentConnection.RemoteAddr().String()
-	externalIPAddress, err := IPToUint32(cliadr[:SlideIP(cliadr)])
-	if err != nil {
-		log.Fatalln("Error : Prasing externalIpAddress error !")
-		return buf
-	}
-	WriteUint32BE(&buf, externalIPAddress, &offset) //externalIpAddress
-	WriteUint16(&buf, 0, &offset)                   //externalServerPort
-	WriteUint16(&buf, 0, &offset)                   //externalClientPort
-	WriteUint16(&buf, 0, &offset)                   //externalTvPort
-	WriteUint32BE(&buf, 0, &offset)                 //localIpAddress
-	WriteUint16(&buf, 0, &offset)                   //localServerPort
-	WriteUint16(&buf, 0, &offset)                   //localClientPort
-	WriteUint16(&buf, 0, &offset)                   //localTvPort
+	WriteUint32BE(&buf, u.netInfo.ExternalIpAddress, &offset) //externalIpAddress
+	WriteUint16(&buf, u.netInfo.ExternalServerPort, &offset)  //externalServerPort
+	WriteUint16(&buf, u.netInfo.ExternalClientPort, &offset)  //externalClientPort
+	WriteUint16(&buf, u.netInfo.ExternalTvPort, &offset)      //externalTvPort
+	WriteUint32BE(&buf, u.netInfo.LocalIpAddress, &offset)    //localIpAddress
+	WriteUint16(&buf, u.netInfo.LocalServerPort, &offset)     //localServerPort
+	WriteUint16(&buf, u.netInfo.LocalClientPort, &offset)     //localClientPort
+	WriteUint16(&buf, u.netInfo.LocalTvPort, &offset)         //localTvPort
+	// log.Println(u.netInfo.ExternalIpAddress,
+	// 	u.netInfo.ExternalServerPort,
+	// 	u.netInfo.ExternalClientPort,
+	// 	u.netInfo.ExternalTvPort,
+	// 	u.netInfo.LocalIpAddress,
+	// 	u.netInfo.LocalServerPort,
+	// 	u.netInfo.LocalClientPort,
+	// 	u.netInfo.LocalTvPort)
 	return buf[:offset]
 }

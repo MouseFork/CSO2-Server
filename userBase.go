@@ -101,14 +101,21 @@ type user struct {
 	currentstatus             uint8
 	currentIsIngame           bool
 	currentSequence           *uint8
-	currentExternalIpAddress  uint32
-	currentServerPort         uint16
-	currentClientPort         uint16
+	netInfo                   userNetInfo
 	//仓库信息
 	inventory userInventory
 }
 
 type userNetInfo struct {
+	ExternalIpAddress  uint32
+	ExternalClientPort uint16
+	ExternalServerPort uint16
+	ExternalTvPort     uint16
+
+	LocalIpAddress  uint32
+	LocalClientPort uint16
+	LocalServerPort uint16
+	LocalTvPort     uint16
 }
 
 func addUser(src *user) bool {
@@ -346,25 +353,32 @@ func getNewUser() user {
 			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00,
 			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3E, 0x00, 0x00}, // unlockedAvatars
-		0,                        //viplevel
-		0,                        //vipXp
-		0x02FB,                   //skillHumanCurXp
-		0x19AC,                   //skillHumanMaxXp
-		0,                        //skillHumanPoints
-		0,                        //skillZombieCurXp
-		0x16F6,                   //skillZombieMaxXp
-		0,                        //skillZombiePoints
-		nil,                      //connection
-		1,                        //serverid
-		0,                        //channelid
-		0,                        //roomid
-		0,                        //currentTeam
-		0,                        //currentstatus
-		false,                    //currentIsIngame
-		nil,                      //sequence
-		0,                        //ip
-		0,                        //srvPort
-		0,                        //cliPort
+		0,      //viplevel
+		0,      //vipXp
+		0x02FB, //skillHumanCurXp
+		0x19AC, //skillHumanMaxXp
+		0,      //skillHumanPoints
+		0,      //skillZombieCurXp
+		0x16F6, //skillZombieMaxXp
+		0,      //skillZombiePoints
+		nil,    //connection
+		1,      //serverid
+		0,      //channelid
+		0,      //roomid
+		0,      //currentTeam
+		0,      //currentstatus
+		false,  //currentIsIngame
+		nil,    //sequence
+		userNetInfo{
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+		},
 		createNewUserInventory(), //仓库
 	}
 }
@@ -449,4 +463,26 @@ func (u *user) setUserIngame(ingame bool) {
 		(*u).currentstatus = UserNotReady
 	}
 
+}
+
+func (u *user) updateHolepunch(portId uint16, localPort uint16, externalPort uint16) uint16 {
+	if u == nil {
+		return 0xFFFF
+	}
+	switch portId {
+	case UDPTypeClient:
+		(*u).netInfo.LocalClientPort = localPort
+		(*u).netInfo.ExternalClientPort = externalPort
+		return 0
+	case UDPTypeServer:
+		(*u).netInfo.LocalServerPort = localPort
+		(*u).netInfo.ExternalServerPort = externalPort
+		return 1
+	case UDPTypeSourceTV:
+		(*u).netInfo.LocalTvPort = localPort
+		(*u).netInfo.ExternalTvPort = externalPort
+		return 2
+	default:
+		return 0xFFFF
+	}
 }
