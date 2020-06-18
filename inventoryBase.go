@@ -1,6 +1,10 @@
 package main
 
-import "net"
+import (
+	"net"
+
+	. "github.com/KouKouChan/CSO2-Server/kerlong"
+)
 
 type userInventory struct {
 	numOfItem uint16              //物品数量

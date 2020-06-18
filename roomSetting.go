@@ -1,6 +1,10 @@
 package main
 
-import "unsafe"
+import (
+	"unsafe"
+
+	. "github.com/KouKouChan/CSO2-Server/kerlong"
+)
 
 //每个房间的设置数据
 type roomSettings struct {
@@ -64,7 +68,8 @@ func buildRoomSetting(room roomInfo) []byte {
 		room.setting.lenOfMultiMaps)
 	offset := 0
 	WriteUint8(&buf, OUTUpdateSettings, &offset)
-	room.flags = getFlags(room)
+	//room.flags = getFlags(room)
+	room.flags = 0xFFFFFFFFFFFFFFFF
 	WriteUint64(&buf, room.flags, &offset)
 	lowFlag := *(*uint32)(unsafe.Pointer(&room.flags))
 	flags := room.flags >> 32
@@ -416,6 +421,7 @@ func (dest *roomInfo) toUpdateSetting(src upSettingReq) {
 	}
 	if lowFlag&0x20000 != 0 {
 		(*dest).setting.lenOfMultiMaps = src.numOfMultiMaps
+		(*dest).setting.multiMaps = make([]byte, src.numOfMultiMaps)
 		for i := 0; i < int((*dest).setting.lenOfMultiMaps); i++ {
 			(*dest).setting.multiMaps[i] = src.multiMaps[i]
 		}
@@ -494,4 +500,5 @@ func (dest *roomInfo) toUpdateSetting(src upSettingReq) {
 	if highFlag&0x10 != 0 {
 		(*dest).setting.respawnTime = src.respawnTime
 	}
+
 }

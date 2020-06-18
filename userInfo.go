@@ -1,6 +1,10 @@
 package main
 
-import "log"
+import (
+	"log"
+
+	. "github.com/KouKouChan/CSO2-Server/kerlong"
+)
 
 //发送出去的包结构，其中一些未知，知道后会加入user里去
 type UserInfo struct {
@@ -103,8 +107,10 @@ func BuildUserInfo(info UserInfo, id uint32, needID bool) []byte {
 	offset := 0
 	if needID {
 		WriteUint32(&infobuf, id, &offset)
+		WriteUint32(&infobuf, info.flags, &offset)
+	} else {
+		WriteUint32(&infobuf, 0xFFFFFFFF, &offset)
 	}
-	WriteUint32(&infobuf, info.flags, &offset)
 	WriteUint64(&infobuf, info.unk00, &offset)
 	WriteString(&infobuf, info.userName, &offset)
 	WriteUint16(&infobuf, info.level, &offset)
@@ -345,7 +351,7 @@ func (u user) buildUserNetInfo() []byte {
 	WriteUint8(&buf, 0, &offset)
 	WriteUint8(&buf, 0, &offset)
 	cliadr := u.currentConnection.RemoteAddr().String()
-	externalIPAddress, err := IPToUint32(cliadr[:slideIP(cliadr)])
+	externalIPAddress, err := IPToUint32(cliadr[:SlideIP(cliadr)])
 	if err != nil {
 		log.Fatalln("Error : Prasing externalIpAddress error !")
 		return buf

@@ -3,6 +3,8 @@ package main
 import (
 	"log"
 	"net"
+
+	. "github.com/KouKouChan/CSO2-Server/kerlong"
 )
 
 func onGameStart(seq *uint8, p packet, client net.Conn) {

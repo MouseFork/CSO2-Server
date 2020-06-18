@@ -3,6 +3,8 @@ package main
 import (
 	"log"
 	"net"
+
+	. "github.com/KouKouChan/CSO2-Server/kerlong"
 )
 
 type loginPacket struct {
@@ -54,16 +56,14 @@ func onLoginPacket(seq *uint8, p *packet, client *(net.Conn)) bool {
 	//UserStart部分
 	pkt.BasePacket.id = TypeUserStart //UserStart消息标识
 	rst := BytesCombine(BuildHeader(seq, pkt.BasePacket), BuildUserStart(u))
-	WriteLen(&rst)       //写入长度
-	(*client).Write(rst) //发送UserStart消息
+	sendPacket(rst, *client)
 	log.Println("User", string(u.loginName), "from", (*client).RemoteAddr().String(), "logged in !")
 	log.Println("Sent a user start packet to", (*client).RemoteAddr().String())
 	//UserInfo部分
 	pkt.BasePacket.id = TypeUserInfo //发送UserInfo消息
 	info := newUserInfo(u)
 	rst = BytesCombine(BuildHeader(seq, pkt.BasePacket), BuildUserInfo(info, u.userid, true))
-	WriteLen(&rst)       //写入长度
-	(*client).Write(rst) //发送UserInfo消息
+	sendPacket(rst, *client)
 	log.Println("Sent a user info packet to", (*client).RemoteAddr().String())
 	//ServerList部分
 	onServerList(seq, p, client)
@@ -71,9 +71,9 @@ func onLoginPacket(seq *uint8, p *packet, client *(net.Conn)) bool {
 	pkt.BasePacket.id = TypeInventory_Create
 	rst = BytesCombine(BuildHeader(seq, pkt.BasePacket), BuildInventoryInfo(u))
 	sendPacket(rst, *client)
-	pkt.BasePacket.id = TypeInventory_Add
-	rst = BytesCombine(BuildHeader(seq, pkt.BasePacket), BuildInventoryInfo(u))
-	sendPacket(rst, *client)
+	//pkt.BasePacket.id = TypeInventory_Add
+	//rst = BytesCombine(BuildHeader(seq, pkt.BasePacket), BuildInventoryInfo(u))
+	//sendPacket(rst, *client)
 	//unlock
 	pkt.BasePacket.id = 0x5a
 	rst = BytesCombine(BuildHeader(seq, pkt.BasePacket), BuildUnlockReply())
@@ -119,7 +119,7 @@ func PraseLoginPacket(p *loginPacket) {
 	(*p).unknown01 = (*p).BasePacket.data[offset]
 	offset++
 
-	(*p).lenOfPassWd = getUint16((*p).BasePacket.data[offset : offset+2])
+	(*p).lenOfPassWd = GetUint16((*p).BasePacket.data[offset : offset+2])
 	offset += 2
 
 	(*p).PassWd = (*p).BasePacket.data[offset : offset+int((*p).lenOfPassWd)]
@@ -132,12 +132,12 @@ func PraseLoginPacket(p *loginPacket) {
 		return
 	}
 	(*p).netCafeID = ReadUint32BE((*p).BasePacket.data, &offset)
-	(*p).unknown02 = getUint32((*p).BasePacket.data[offset : offset+4])
+	(*p).unknown02 = GetUint32((*p).BasePacket.data[offset : offset+4])
 	offset += 4
 
-	(*p).userSn = getUint64((*p).BasePacket.data[offset : offset+8])
+	(*p).userSn = GetUint64((*p).BasePacket.data[offset : offset+8])
 	offset += 8
-	(*p).lenOfUnknownString = getUint16((*p).BasePacket.data[offset : offset+2])
+	(*p).lenOfUnknownString = GetUint16((*p).BasePacket.data[offset : offset+2])
 	offset += 2
 
 	(*p).UnknownString03 = (*p).BasePacket.data[offset : offset+int((*p).lenOfUnknownString)]

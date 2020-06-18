@@ -1,6 +1,10 @@
 package main
 
-import "log"
+import (
+	"log"
+
+	. "github.com/KouKouChan/CSO2-Server/kerlong"
+)
 
 const (
 	DefalutChannelName       = "CSO2-Channel"

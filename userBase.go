@@ -108,6 +108,9 @@ type user struct {
 	inventory userInventory
 }
 
+type userNetInfo struct {
+}
+
 func addUser(src *user) bool {
 	if (*src).userid == 0 {
 		log.Fatalln("Error : ID of User", (*src).username, "is illegal !")

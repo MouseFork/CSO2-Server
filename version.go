@@ -1,6 +1,10 @@
 package main
 
-import "net"
+import (
+	"net"
+
+	. "github.com/KouKouChan/CSO2-Server/kerlong"
+)
 
 func onVersionPacket(seq *uint8, p packet, client net.Conn) {
 	header := BuildHeader(seq, p)

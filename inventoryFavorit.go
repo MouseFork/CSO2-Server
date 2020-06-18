@@ -1,5 +1,7 @@
 package main
 
+import . "github.com/KouKouChan/CSO2-Server/kerlong"
+
 const (
 	FavoriteSetLoadout   = 0
 	FavoriteSetCosmetics = 1

@@ -3,6 +3,8 @@ package main
 import (
 	"log"
 	"net"
+
+	. "github.com/KouKouChan/CSO2-Server/kerlong"
 )
 
 type inHostSetInventoryPacket struct {

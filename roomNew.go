@@ -3,6 +3,8 @@ package main
 import (
 	"log"
 	"net"
+
+	. "github.com/KouKouChan/CSO2-Server/kerlong"
 )
 
 //InNewRoomPacket 新建房间时传进来的数据包
@@ -129,7 +131,8 @@ func buildCreateAndJoin(rm roomInfo) []byte {
 	WriteUint32(&buf, 0, &offset)
 	WriteUint32(&buf, 0, &offset)
 
-	WriteString(&buf, []byte(""), &offset)
+	//WriteString(&buf, []byte(""), &offset)
+	WriteUint8(&buf, 0, &offset) //字符串长度为0
 
 	WriteUint16(&buf, 0, &offset)
 

@@ -5,6 +5,8 @@ import (
 	"net"
 	"strconv"
 	"unsafe"
+
+	. "github.com/KouKouChan/CSO2-Server/kerlong"
 )
 
 type upSettingReq struct {
@@ -102,7 +104,7 @@ func onUpdateRoom(seq *uint8, p packet, client net.Conn) {
 	curroom.toUpdateSetting(pkt)
 	p.id = TypeRoom
 	//向房间所有玩家发送更新报文
-	for k, v := range (*curroom).users {
+	for k, v := range curroom.users {
 		rst := BytesCombine(BuildHeader(v.currentSequence, p), buildRoomSetting(*curroom))
 		sendPacket(rst, v.currentConnection)
 		log.Println("["+strconv.Itoa(k+1)+"/"+strconv.Itoa(int((*curroom).numPlayers))+"] Updated room for", v.currentConnection.RemoteAddr().String(), "!")
@@ -115,6 +117,7 @@ func praseUpdateRoomPacket(src packet, dest *upSettingReq) bool {
 	offset := 6
 	//读取flag，标记要读的有哪些数据
 	flags := ReadUint64(src.data, &offset)
+	(*dest).flags = flags
 	lowFlag := *(*uint32)(unsafe.Pointer(&flags))
 	//右移32比特位
 	flags = flags >> 32
@@ -180,7 +183,8 @@ func praseUpdateRoomPacket(src packet, dest *upSettingReq) bool {
 	}
 	if lowFlag&0x20000 != 0 {
 		(*dest).numOfMultiMaps = ReadUint8(src.data, &offset)
-		for i := 0; i < int((*dest).numOfMultiMaps); i++ {
+		(*dest).multiMaps = make([]uint8, dest.numOfMultiMaps)
+		for i := 0; i < int(dest.numOfMultiMaps); i++ {
 			(*dest).multiMaps[i] = ReadUint8(src.data, &offset)
 		}
 	}
