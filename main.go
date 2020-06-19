@@ -100,29 +100,31 @@ func RecvMessage(client net.Conn) {
 			}
 			switch pkt.id {
 			case TypeVersion:
-				log.Println("Recived a client version packet from", client.RemoteAddr().String())
+				//log.Println("Recived a client version packet from", client.RemoteAddr().String())
 				onVersionPacket(&seq, pkt, client)
 			case TypeLogin:
-				log.Println("Recived a login request packet from", client.RemoteAddr().String())
-				if !onLoginPacket(&seq, &pkt, &client) {
-					log.Println("Recived a illegal packet from", client.RemoteAddr().String())
-				}
+				//log.Println("Recived a login request packet from", client.RemoteAddr().String())
+				//if ! {
+				//log.Println("Recived a illegal packet from", client.RemoteAddr().String())
+				//}
+				onLoginPacket(&seq, &pkt, &client)
 			case TypeRequestChannels:
-				log.Println("Recived a ChannelList request packet from", client.RemoteAddr().String())
+				//log.Println("Recived a ChannelList request packet from", client.RemoteAddr().String())
 				onServerList(&seq, &pkt, &client)
 			case TypeRequestRoomList:
-				log.Println("Recived a RoomList request packet from", client.RemoteAddr().String())
+				//log.Println("Recived a RoomList request packet from", client.RemoteAddr().String())
 				onRoomList(&seq, &pkt, client)
 			case TypeRoom:
 				//log.Println("Recived a Room request packet from", client.RemoteAddr().String())
 				onRoomRequest(&seq, pkt, client)
 			case TypeHost:
-				log.Println("Recived a Host request packet from", client.RemoteAddr().String())
+				//log.Println("Recived a Host request packet from", client.RemoteAddr().String())
 				onHost(&seq, pkt, client)
 			case TypeFavorite:
-				log.Println("Recived a favorite request packet from", client.RemoteAddr().String())
+				//log.Println("Recived a favorite request packet from", client.RemoteAddr().String())
+				onFavorite(&seq, pkt, client)
 			default:
-				log.Println("Recived a unknown packet from", client.RemoteAddr().String())
+				log.Println("Unknown packet", pkt.id, "from", client.RemoteAddr().String())
 			}
 		} else {
 			log.Println("client", client.RemoteAddr().String(), "closed the connection")

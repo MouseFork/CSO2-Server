@@ -1,9 +1,15 @@
 package main
 
 import (
+	"log"
 	"net"
 
 	. "github.com/KouKouChan/CSO2-Server/kerlong"
+)
+
+const (
+	FavoriteSetLoadout   = 0
+	FavoriteSetCosmetics = 1
 )
 
 type userInventory struct {
@@ -27,8 +33,35 @@ type userInventoryItem struct {
 	count uint16 //数量
 }
 
-func onInventoryInfo(seq *uint8, p *packet, client *(net.Conn)) {
+type inFavoritePacket struct {
+	packetType uint8
+}
 
+func onFavorite(seq *uint8, p packet, client net.Conn) {
+	var pkt inFavoritePacket
+	if !praseFavoritePacket(p, &pkt) {
+		log.Println("Error : Recived a illegal favorite packet from", client.RemoteAddr().String())
+		return
+	}
+	switch pkt.packetType {
+	case FavoriteSetLoadout:
+		//log.Println("Recived a favorite SetLoadout packet from", client.RemoteAddr().String())
+		onFavoriteSetLoadout(seq, p, client)
+	case FavoriteSetCosmetics:
+		//log.Println("Recived a favorite SetCosmetics packet from", client.RemoteAddr().String())
+		onFavoriteSetCosmetics(seq, p, client)
+	default:
+		log.Println("Unknown favorite packet", pkt.packetType, "from", client.RemoteAddr().String())
+	}
+}
+
+func praseFavoritePacket(p packet, dest *inFavoritePacket) bool {
+	if p.datalen < 6 {
+		return false
+	}
+	offset := 5
+	(*dest).packetType = ReadUint8(p.data, &offset)
+	return true
 }
 
 func BuildInventoryInfo(u user) []byte {

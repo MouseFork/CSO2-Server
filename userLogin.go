@@ -44,6 +44,7 @@ func onLoginPacket(seq *uint8, p *packet, client *(net.Conn)) bool {
 	if u.userid <= 0 {
 		log.Println("Error : User", string(pkt.gameUsername), "from", (*client).RemoteAddr().String(), "login failed !")
 		(*client).Close()
+		return false
 	}
 	u.currentConnection = *client
 	//绑定seq
@@ -52,6 +53,7 @@ func onLoginPacket(seq *uint8, p *packet, client *(net.Conn)) bool {
 	if !addUser(&u) {
 		log.Println("Error : User", string(pkt.gameUsername), "from", (*client).RemoteAddr().String(), "login failed !")
 		(*client).Close()
+		return false
 	}
 	//UserStart部分
 	pkt.BasePacket.id = TypeUserStart //UserStart消息标识
@@ -71,9 +73,9 @@ func onLoginPacket(seq *uint8, p *packet, client *(net.Conn)) bool {
 	pkt.BasePacket.id = TypeInventory_Create
 	rst = BytesCombine(BuildHeader(seq, pkt.BasePacket), BuildInventoryInfo(u))
 	sendPacket(rst, *client)
-	//pkt.BasePacket.id = TypeInventory_Add
-	//rst = BytesCombine(BuildHeader(seq, pkt.BasePacket), BuildInventoryInfo(u))
-	//sendPacket(rst, *client)
+	pkt.BasePacket.id = TypeInventory_Add
+	rst = BytesCombine(BuildHeader(seq, pkt.BasePacket), BuildInventoryInfo(u))
+	sendPacket(rst, *client)
 	//unlock
 	pkt.BasePacket.id = 0x5a
 	rst = BytesCombine(BuildHeader(seq, pkt.BasePacket), BuildUnlockReply())

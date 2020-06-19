@@ -120,16 +120,16 @@ type userNetInfo struct {
 
 func addUser(src *user) bool {
 	if (*src).userid == 0 {
-		log.Fatalln("Error : ID of User", (*src).username, "is illegal !")
+		log.Println("Error : ID of User", (*src).username, "is illegal !")
 		return false
 	}
 	if UserManager.userNum > MAXUSERNUM {
-		log.Fatalln("Error : Online users is too more to login !")
+		log.Println("Error : Online users is too more to login !")
 		return false
 	}
 	for _, v := range UserManager.users {
 		if v.userid == (*src).userid {
-			log.Fatalln("Error : User is already logged in !")
+			log.Println("Error : User is already logged in !")
 			return false
 		}
 	}
@@ -140,11 +140,11 @@ func addUser(src *user) bool {
 
 func delUser(src *user) bool {
 	if (*src).userid == 0 {
-		log.Fatalln("Error : ID of User", (*src).username, "is illegal !")
+		log.Println("Error : ID of User", (*src).username, "is illegal !")
 		return false
 	}
 	if UserManager.userNum == 0 {
-		log.Fatalln("Error : There is no online user !")
+		log.Println("Error : There is no online user !")
 		return false
 	}
 	for i, v := range UserManager.users {
@@ -159,11 +159,28 @@ func delUser(src *user) bool {
 
 func delUserWithConn(con net.Conn) bool {
 	if UserManager.userNum == 0 {
-		log.Fatalln("Error : There is no online user !")
+		log.Println("Error : There is no online user !")
 		return false
 	}
 	for i, v := range UserManager.users {
 		if v.currentConnection == con {
+			rm := getRoomFromID(v.getUserChannelServerID(),
+				v.getUserChannelID(),
+				v.getUserRoomID())
+			if rm != nil &&
+				rm.id > 0 {
+				rm.roomRemoveUser(v)
+				if rm.numPlayers <= 0 {
+					delChannelRoom(rm.id,
+						v.getUserChannelID(),
+						v.getUserChannelServerID())
+
+				} else {
+					var p packet
+					p.id = TypeRoom
+					sentUserLeaveMes(&v, rm, p)
+				}
+			}
 			UserManager.users = append(UserManager.users[:i], UserManager.users[i+1:]...)
 			UserManager.userNum--
 			return true
@@ -173,7 +190,7 @@ func delUserWithConn(con net.Conn) bool {
 }
 func getNewUserID() uint32 {
 	if UserManager.userNum > MAXUSERNUM {
-		log.Fatalln("Online users is too much , unable to get a new id !")
+		log.Println("Online users is too much , unable to get a new id !")
 		//ID=0 是非法的
 		return 0
 	}
@@ -207,7 +224,7 @@ func getUserByLogin(p loginPacket) user {
 func findOnlineUserByName(name []byte) *user {
 	l := len(name)
 	if l <= 0 {
-		log.Fatalln("User name is illegal !")
+		log.Println("User name is illegal !")
 		u := getNewUser()
 		return &u
 	}

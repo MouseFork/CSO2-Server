@@ -69,7 +69,7 @@ func newChannelInfo(name []byte, chlsrv channelServer) channelInfo {
 //getNewChannelID() 暂定
 func getNewChannelID(chlsrv channelServer) uint8 {
 	if chlsrv.channelCount > MAXCHANNELNUM {
-		log.Fatalln("Channel is too much ! Unable to create more !")
+		log.Println("Channel is too much ! Unable to create more !")
 		//ID=0 是非法的
 		return 0
 	}
@@ -104,25 +104,25 @@ func getChannelWithID(id uint8, chlsrv channelServer) *channelInfo {
 func addChannelRoom(room roomInfo, chlid uint8, chlsrvid uint8) bool {
 	chlsrv := getChannelServerWithID(chlsrvid)
 	if chlsrv.serverIndex <= 0 {
-		log.Fatalln("Add room to a null channelServer!")
+		log.Println("Add room to a null channelServer!")
 		return false
 	}
 	chl := getChannelWithID(chlid, *chlsrv)
 	if chl.channelID <= 0 {
-		log.Fatalln("Add room to a null channel!")
+		log.Println("Add room to a null channel!")
 		return false
 	}
 	if chl.roomNum > MAXROOMNUMS {
-		log.Fatalln("Room is too much ! Unable to add more !")
+		log.Println("Room is too much ! Unable to add more !")
 		return false
 	}
 	if room.id <= 0 {
-		log.Fatalln("ID of room is illegal !")
+		log.Println("ID of room is illegal !")
 		return false
 	}
 	for _, v := range chl.rooms {
 		if v.id == room.id {
-			log.Fatalln("Room is already existed in Channel!")
+			log.Println("Room is already existed in Channel!")
 			return false
 		}
 	}
@@ -135,20 +135,20 @@ func addChannelRoom(room roomInfo, chlid uint8, chlsrvid uint8) bool {
 func delChannelRoom(roomid uint16, chlid uint8, chlsrvid uint8) bool {
 	chlsrv := getChannelServerWithID(chlsrvid)
 	if chlsrv.serverIndex <= 0 {
-		log.Fatalln("Remove room to a null channelServer!")
+		log.Println("Remove room to a null channelServer!")
 		return false
 	}
 	chl := getChannelWithID(chlid, *chlsrv)
 	if chl.channelID <= 0 {
-		log.Fatalln("Remove room to a null channel!")
+		log.Println("Remove room to a null channel!")
 		return false
 	}
 	if chl.roomNum <= 0 {
-		log.Fatalln("There is no room in this channel , unable to remove!")
+		log.Println("There is no room in this channel , unable to remove!")
 		return false
 	}
 	if roomid <= 0 {
-		log.Fatalln("ID of room is illegal !")
+		log.Println("ID of room is illegal !")
 		return false
 	}
 	for k, v := range chl.rooms {

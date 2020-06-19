@@ -83,11 +83,11 @@ func onNewRoom(seq *uint8, p packet, client net.Conn) {
 	rst := append(BuildHeader(seq, p), OUTCreateAndJoin)
 	rst = BytesCombine(rst, buildCreateAndJoin(rm))
 	sendPacket(rst, client)
-	log.Println("Sent a new room packet to", client.RemoteAddr().String())
+	log.Println("Sent a new room packet to", string(u.username))
 	//生成房间设置数据包
 	rst = BytesCombine(BuildHeader(seq, p), buildRoomSetting(rm))
 	sendPacket(rst, client)
-	log.Println("Sent a room setting packet to", client.RemoteAddr().String())
+	log.Println("Sent a room setting packet to", string(u.username))
 }
 
 func praseNewRoomQuest(p packet, roompkt *InNewRoomPacket) bool {

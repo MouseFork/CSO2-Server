@@ -21,13 +21,13 @@ func onLeaveRoom(seq *uint8, p packet, client net.Conn) {
 		uPtr.getUserRoomID())
 	if rm == nil ||
 		rm.id <= 0 {
-		log.Println("Error : User:", string(uPtr.username), "try to leave a null room !")
+		log.Println("Error : User", string(uPtr.username), "try to leave a null room !")
 		return
 	}
 	//检查玩家游戏状态，准备情况下并且开始倒计时了，那么就不允许离开房间
 	if uPtr.isUserReady() &&
 		rm.isGlobalCountdownInProgress() {
-		log.Println("Error : User:", string(uPtr.username), "try to leave room but is started !")
+		log.Println("Error : User", string(uPtr.username), "try to leave room but is started !")
 		return
 	}
 	//房间移除玩家
@@ -40,26 +40,7 @@ func onLeaveRoom(seq *uint8, p packet, client net.Conn) {
 
 	} else {
 		//向其他玩家发送离开信息
-		//如果玩家是房主
-		if rm.hostUserID == uPtr.userid {
-			(*rm).hostUserID = rm.users[0].userid
-			for _, v := range rm.users {
-				rst1 := append(BuildHeader(v.currentSequence, p), OUTPlayerLeave)
-				rst1 = BytesCombine(rst1, BuildUserLeave(uPtr.userid))
-				rst2 := append(BuildHeader(v.currentSequence, p), OUTSetHost)
-				rst2 = BytesCombine(rst2, BuildSetHost(rm.hostUserID))
-				sendPacket(rst1, v.currentConnection)
-				sendPacket(rst2, v.currentConnection)
-			}
-			log.Println("Sent a set roomHost packet to other users")
-		} else {
-			for _, v := range rm.users {
-				rst1 := append(BuildHeader(v.currentSequence, p), OUTPlayerLeave)
-				rst1 = BytesCombine(rst1, BuildUserLeave(uPtr.userid))
-				sendPacket(rst1, v.currentConnection)
-			}
-		}
-		log.Println("Sent a leave room packet to other users")
+		sentUserLeaveMes(uPtr, rm, p)
 	}
 	//设置玩家状态
 	p.datalen = 7
@@ -70,7 +51,28 @@ func onLeaveRoom(seq *uint8, p packet, client net.Conn) {
 	onRoomList(seq, &p, client)
 	log.Println("User:", string(uPtr.username), "left room")
 }
-
+func sentUserLeaveMes(uPtr *user, rm *roomInfo, p packet) {
+	//如果玩家是房主
+	if rm.hostUserID == uPtr.userid {
+		(*rm).hostUserID = rm.users[0].userid
+		for _, v := range rm.users {
+			rst1 := append(BuildHeader(v.currentSequence, p), OUTPlayerLeave)
+			rst1 = BytesCombine(rst1, BuildUserLeave(uPtr.userid))
+			rst2 := append(BuildHeader(v.currentSequence, p), OUTSetHost)
+			rst2 = BytesCombine(rst2, BuildSetHost(rm.hostUserID))
+			sendPacket(rst1, v.currentConnection)
+			sendPacket(rst2, v.currentConnection)
+		}
+		log.Println("Sent a set roomHost packet to other users")
+	} else {
+		for _, v := range rm.users {
+			rst1 := append(BuildHeader(v.currentSequence, p), OUTPlayerLeave)
+			rst1 = BytesCombine(rst1, BuildUserLeave(uPtr.userid))
+			sendPacket(rst1, v.currentConnection)
+		}
+		log.Println("Sent a leave room packet to other users")
+	}
+}
 func BuildUserLeave(id uint32) []byte {
 	buf := make([]byte, 4)
 	offset := 0

@@ -205,31 +205,34 @@ func onRoomRequest(seq *uint8, p packet, client net.Conn) {
 	if praseRoomPacket(p, &pkt) {
 		switch pkt.InRoomType {
 		case NewRoomRequest:
-			log.Println("Recived a new room request from", client.RemoteAddr().String())
+			//log.Println("Recived a new room request from", client.RemoteAddr().String())
 			onNewRoom(seq, p, client)
 		case JoinRoomRequest:
-			log.Println("Recived a join room request from", client.RemoteAddr().String())
+			//log.Println("Recived a join room request from", client.RemoteAddr().String())
+			onJoinRoom(seq, p, client)
 		case LeaveRoomRequest:
-			log.Println("Recived a leave room request from", client.RemoteAddr().String())
+			//log.Println("Recived a leave room request from", client.RemoteAddr().String())
 			onLeaveRoom(seq, p, client)
 		case ToggleReadyRequest:
-			log.Println("Recived a ready request from", client.RemoteAddr().String())
+			//log.Println("Recived a ready request from", client.RemoteAddr().String())
 			onToggleReady(seq, p, client)
 		case GameStartRequest:
-			log.Println("Recived a start game request from", client.RemoteAddr().String())
+			//log.Println("Recived a start game request from", client.RemoteAddr().String())
 			onGameStart(seq, p, client)
 		case UpdateSettings:
-			log.Println("Recived a update room setting request from", client.RemoteAddr().String())
+			//log.Println("Recived a update room setting request from", client.RemoteAddr().String())
 			onUpdateRoom(seq, p, client)
 		case OnCloseResultWindow:
-			log.Println("Recived a close resultWindow request from", client.RemoteAddr().String())
+			//log.Println("Recived a close resultWindow request from", client.RemoteAddr().String())
+			onCloseResultRequest(seq, p, client)
 		case SetUserTeamRequest:
-			log.Println("Recived a set user team request from", client.RemoteAddr().String())
+			//log.Println("Recived a set user team request from", client.RemoteAddr().String())
+			onChangeTeam(seq, p, client)
 		case GameStartCountdownRequest:
-			log.Println("Recived a begin start game request from", client.RemoteAddr().String())
+			//log.Println("Recived a begin start game request from", client.RemoteAddr().String())
 			onGameStartCountdown(p, client)
 		default:
-			log.Println("Recived a unknown room packet from", client.RemoteAddr().String())
+			log.Println("Unknown room packet", pkt.InRoomType, "from", client.RemoteAddr().String())
 		}
 	} else {
 		log.Println("Error : Recived a illegal room packet from", client.RemoteAddr().String())
@@ -247,7 +250,7 @@ func praseRoomPacket(p packet, dest *inRoomPaket) bool {
 //getNewRoomID() 暂定
 func getNewRoomID(chl channelInfo) uint16 {
 	if chl.roomNum > MAXROOMNUMS {
-		log.Fatalln("Error : Room is too much ! Unable to create more !")
+		log.Println("Error : Room is too much ! Unable to create more !")
 		//ID=0 是非法的
 		return 0
 	}
@@ -389,13 +392,13 @@ func (rm *roomInfo) progressCountdown(num uint8) {
 	}
 	(*rm).countdown--
 	if rm.countdown != num {
-		log.Fatalln("Error : Host is counting", num, "but room is", rm.countdown)
+		log.Println("Error : Host is counting", num, "but room is", rm.countdown)
 	}
 }
 
 func (rm *roomInfo) getCountdown() uint8 {
 	if rm.countingDown == false {
-		log.Fatalln("Error : tried to get countdown without counting down")
+		log.Println("Error : tried to get countdown without counting down")
 		return 0
 	}
 	if rm.countdown > DefaultCountdownNum ||
@@ -403,4 +406,102 @@ func (rm *roomInfo) getCountdown() uint8 {
 		(*rm).countdown = 0
 	}
 	return rm.countdown
+}
+
+func (rm roomInfo) getAllCtNum() int {
+	num := 0
+	for _, v := range rm.users {
+		if v.getUserTeam() == CounterTerrorist {
+			num++
+		}
+	}
+	return num
+}
+
+func (rm roomInfo) getAllTrNum() int {
+	num := 0
+	for _, v := range rm.users {
+		if v.getUserTeam() == Terrorist {
+			num++
+		}
+	}
+	return num
+}
+
+func (rm roomInfo) getFreeSlots() int {
+	// u := rm.roomGetUser(rm.hostUserID)
+	// if u == nil ||
+	// 	u.userid <= 0 {
+	// 	return 0
+	// }
+	// if rm.setting.areBotsEnabled != 0 {
+	// 	botsInHostTeam := 0
+	// 	humansInHostTeam := 0
+	// 	if u.getUserTeam() == CounterTerrorist {
+	// 		botsInHostTeam = int(rm.setting.numCtBots)
+	// 		humansInHostTeam = rm.getAllCtNum()
+	// 	} else if u.getUserTeam() == Terrorist {
+	// 		botsInHostTeam = int(rm.setting.numTrBots)
+	// 		humansInHostTeam = rm.getAllTrNum()
+	// 	}
+	// 	return botsInHostTeam - humansInHostTeam
+	// }
+	return int(rm.setting.maxPlayers - rm.numPlayers)
+}
+
+func (rm *roomInfo) joinUser(u *user) bool {
+	destTeam := rm.findDesirableTeam()
+	if destTeam <= 0 {
+		log.Println("Error : Cant add User", string(u.username), "to room", string(rm.setting.roomName))
+		return false
+	}
+	(*rm).numPlayers++
+	(*u).currentTeam = uint8(destTeam)
+	(*u).setUserStatus(UserNotReady)
+	u.setUserRoom(rm.id)
+	u.setUserIngame(false)
+	(*rm).users = append((*rm).users, *u)
+	return true
+}
+
+func (rm roomInfo) findDesirableTeam() int {
+	trNum := 0
+	ctNum := 0
+	for _, v := range rm.users {
+		if v.getUserTeam() == Terrorist {
+			trNum++
+		} else if v.getUserTeam() == CounterTerrorist {
+			ctNum++
+		} else {
+			log.Println("Error : User", string(v.username), "is in Unknown team in room", string(rm.setting.roomName))
+			return 0
+		}
+	}
+	if rm.setting.areBotsEnabled != 0 {
+		u := rm.roomGetUser(rm.hostUserID)
+		if u == nil ||
+			u.userid <= 0 {
+			return 0
+		}
+		botsInHostTeam := 0
+		if u.getUserTeam() == CounterTerrorist {
+			botsInHostTeam = int(rm.setting.numCtBots)
+			if botsInHostTeam > 0 {
+				return CounterTerrorist
+			}
+		} else if u.getUserTeam() == Terrorist {
+			botsInHostTeam = int(rm.setting.numTrBots)
+			if botsInHostTeam > 0 {
+				return Terrorist
+			}
+		} else {
+			log.Println("Error : Host", string(u.username), "is in Unknown team in room", string(rm.setting.roomName))
+			return 0
+		}
+	}
+	if trNum < ctNum {
+		return Terrorist
+	} else {
+		return CounterTerrorist
+	}
 }

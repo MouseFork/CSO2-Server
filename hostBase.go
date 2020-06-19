@@ -34,7 +34,7 @@ func onHost(seq *uint8, p packet, client net.Conn) {
 			log.Println("Recived a game end packet from", client.RemoteAddr().String())
 
 		case SetInventory:
-			log.Println("Recived a setInventory packet from", client.RemoteAddr().String())
+			//log.Println("Recived a setInventory packet from", client.RemoteAddr().String())
 			onHostSetUserInventory(p, client)
 		case SetLoadout:
 			log.Println("Recived a setLoadout packet from", client.RemoteAddr().String())
@@ -49,7 +49,7 @@ func onHost(seq *uint8, p packet, client net.Conn) {
 			log.Println("Recived a use item packet from", client.RemoteAddr().String())
 
 		default:
-			log.Println("Recived a unknown host packet from", client.RemoteAddr().String())
+			log.Println("Unknown host packet", pkt.inHostType, "from", client.RemoteAddr().String())
 		}
 	} else {
 		log.Println("Error : Recived a illegal host packet from", client.RemoteAddr().String())

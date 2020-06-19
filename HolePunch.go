@@ -58,7 +58,7 @@ func RecvHolePunchMessage(data []byte, len int, client *net.UDPAddr, server *net
 	cliadr := client.IP.To4().String()
 	externalIPAddress, err := IPToUint32(cliadr)
 	if err != nil {
-		log.Fatalln("Error : Prasing externalIpAddress error !")
+		log.Println("Error : Prasing externalIpAddress error !")
 		return
 	}
 	//找到对应玩家
