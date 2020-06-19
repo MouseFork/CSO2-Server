@@ -34,7 +34,7 @@ func onHost(seq *uint8, p packet, client net.Conn) {
 			log.Println("Recived a game end packet from", client.RemoteAddr().String())
 
 		case SetInventory:
-			//log.Println("Recived a setInventory packet from", client.RemoteAddr().String())
+			log.Println("Recived a setInventory packet from", client.RemoteAddr().String())
 			onHostSetUserInventory(p, client)
 		case SetLoadout:
 			log.Println("Recived a setLoadout packet from", client.RemoteAddr().String())

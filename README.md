@@ -49,7 +49,7 @@ CSOL2 服务器
 
 *Go 1.14.2*
 
-***当你要架设局域网或外网时，请打开防火墙的端口。
+当你要架设局域网或外网时，请打开防火墙的端口。
 
 ### 编译方法
 
@@ -57,4 +57,4 @@ CSOL2 服务器
     2. 执行命令 go build
     3. 运行生成的可执行文件即可
 
-*** 声明：Counter-Strike Online 2 归NEXON所有 ***
+*声明：Counter-Strike Online 2 归NEXON所有*
