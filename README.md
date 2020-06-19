@@ -4,7 +4,7 @@
 
 CSOL2 服务器
 
-*用于NEXON的 Counter-Strike Online 2*
+*用于韩版 Counter-Strike Online 2*
 
 本程序的目标是能够实现一个频道支持局域网(LAN)嗅探，同时另一个频道支持互联网(Internet)互联，基于服务端中继。
 
@@ -49,10 +49,12 @@ CSOL2 服务器
 
 *Go 1.14.2*
 
-***当你要架设局域网或外网时，请打开防火墙的端口。***
+***当你要架设局域网或外网时，请打开防火墙的端口。
 
 ### 编译方法
 
     1. 进入目录
     2. 执行命令 go build
     3. 运行生成的可执行文件即可
+
+*** 声明：Counter-Strike Online 2 归NEXON所有 ***
