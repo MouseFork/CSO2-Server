@@ -52,7 +52,7 @@ func onGameStart(seq *uint8, p packet, client net.Conn) {
 					rst = BytesCombine(BuildHeader(v.currentSequence, p), BuildJoinHost(u.userid))
 					sendPacket(rst, v.currentConnection)
 					//给主机发送其他人的数据
-					rst = UDPBuild(seq, p, 0, v.userid, v.netInfo.ExternalIpAddress, v.netInfo.ExternalClientPort)
+					rst = UDPBuild(uPtr.currentSequence, p, 0, v.userid, v.netInfo.ExternalIpAddress, v.netInfo.ExternalClientPort)
 					sendPacket(rst, uPtr.currentConnection)
 				}
 			}
@@ -70,7 +70,7 @@ func onGameStart(seq *uint8, p packet, client net.Conn) {
 		p.id = TypeHost
 		rst := BytesCombine(BuildHeader(uPtr.currentSequence, p), BuildGameStart(u.userid))
 		sendPacket(rst, uPtr.currentConnection)
-		log.Println("Host", string(uPtr.username), "started game ")
+		log.Println("Host", string(uPtr.username), "started game in room", string(rm.setting.roomName))
 	} else if rm.setting.isIngame != 0 {
 		host := rm.roomGetUser(rm.hostUserID)
 		if host == nil ||
@@ -78,12 +78,13 @@ func onGameStart(seq *uint8, p packet, client net.Conn) {
 			log.Println("Error : User", string(uPtr.username), "try to start game but host is null !")
 			return
 		}
-		//发送房间数据
-		rst := BytesCombine(BuildHeader(uPtr.currentSequence, p), buildRoomSetting(*rm))
-		sendPacket(rst, uPtr.currentConnection)
 		//设置用户状态
 		uPtr.setUserIngame(true)
 		u.setUserIngame(true)
+		//发送房间数据
+		p.id = TypeRoom
+		rst := BytesCombine(BuildHeader(u.currentSequence, p), buildRoomSetting(*rm))
+		sendPacket(rst, u.currentConnection)
 		//连接到主机
 		rst = UDPBuild(u.currentSequence, p, 1, host.userid, host.netInfo.ExternalIpAddress, host.netInfo.ExternalServerPort)
 		sendPacket(rst, u.currentConnection)
@@ -91,8 +92,8 @@ func onGameStart(seq *uint8, p packet, client net.Conn) {
 		p.id = TypeHost
 		rst = BytesCombine(BuildHeader(u.currentSequence, p), BuildJoinHost(host.userid))
 		sendPacket(rst, u.currentConnection)
-		//发送用户数据给主机
-		rst = UDPBuild(host.currentSequence, p, 0, uPtr.userid, uPtr.netInfo.ExternalIpAddress, uPtr.netInfo.ExternalServerPort)
+		//给主机发送其他人的数据
+		rst = UDPBuild(host.currentSequence, p, 0, u.userid, u.netInfo.ExternalIpAddress, u.netInfo.ExternalClientPort)
 		sendPacket(rst, host.currentConnection)
 		//给每个人发送房间内所有人的准备状态
 		p.id = TypeRoom
@@ -103,7 +104,7 @@ func onGameStart(seq *uint8, p packet, client net.Conn) {
 				sendPacket(rst, k.currentConnection)
 			}
 		}
-		log.Println("User", string(uPtr.username), "started game ")
+		log.Println("User", string(uPtr.username), "joined in game in room", string(rm.setting.roomName))
 	}
 }
 
