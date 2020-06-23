@@ -109,7 +109,7 @@ func onUpdateRoom(seq *uint8, p packet, client net.Conn) {
 		sendPacket(rst, v.currentConnection)
 		log.Println("["+strconv.Itoa(k+1)+"/"+strconv.Itoa(int((*curroom).numPlayers))+"] Updated room for", v.currentConnection.RemoteAddr().String(), "!")
 	}
-	log.Println("Host from", client.RemoteAddr().String(), "updated room", string(curroom.setting.roomName), "id", curroom.id)
+	log.Println("Host", string(uPtr.username), "updated room", string(curroom.setting.roomName), "id", curroom.id)
 }
 
 func praseUpdateRoomPacket(src packet, dest *upSettingReq) bool {

@@ -51,7 +51,7 @@ func onGameStartCountdown(p packet, client net.Conn) {
 	}
 	//检查当前游戏模式
 	if !curroom.canStartGame() {
-		log.Println("Error : User", string(uPtr.username), "try to start countdown but is illegal !")
+		log.Println("Error : User", string(uPtr.username), "try to start countdown but mode is illegal !")
 		return
 	}
 	//检查是否应该继续倒计时
@@ -77,10 +77,10 @@ func praseRoomCountdownPacket(p packet, dest *InRoomCountdownPacket) bool {
 	}
 	offset := 6
 	(*dest).CountdownType = ReadUint8(p.data, &offset)
-	if p.datalen < 8 {
-		return false
-	}
 	if (*dest).CountdownType == InProgress {
+		if p.datalen < 8 {
+			return false
+		}
 		(*dest).count = ReadUint8(p.data, &offset)
 	}
 	return true

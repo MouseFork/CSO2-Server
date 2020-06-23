@@ -19,7 +19,7 @@ func onCloseResultRequest(seq *uint8, p packet, client net.Conn) {
 	p.id = TypeHost
 	rst := BytesCombine(BuildHeader(uPtr.currentSequence, p), BuildCloseResultWindow())
 	sendPacket(rst, uPtr.currentConnection)
-	log.Println("User", string(uPtr.username), "closed game result window from room", uPtr.currentRoomId)
+	log.Println("User", string(uPtr.username), "closed game result window from room id", uPtr.currentRoomId)
 }
 
 func BuildCloseResultWindow() []byte {

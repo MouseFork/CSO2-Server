@@ -67,6 +67,7 @@ func BuildLoadout(inventory userInventory) []byte {
 	buf := make([]byte, 5+len(inventory.loadouts)*96)
 	offset := 0
 	WriteUint8(&buf, FavoriteSetLoadout, &offset)
+	WriteUint8(&buf, uint8(len(inventory.loadouts))*16, &offset)
 	for i, v := range inventory.loadouts {
 		for j, k := range v.items {
 			WriteUint8(&buf, uint8(i), &offset)

@@ -52,14 +52,14 @@ const (
 )
 
 func (p *packet) PrasePacket() {
-	(*p).datalen = len((*p).data)
-	if (*p).data[0] != TypeSignature || (*p).datalen < 5 {
+	if (*p).data[0] != TypeSignature {
 		(*p).IsGoodPacket = false
 		return
 	}
 	(*p).IsGoodPacket = true
 	(*p).sequence = (*p).data[1]
 	(*p).length = GetUint16((*p).data[2:4])
+	(*p).datalen = int((*p).length) + HeaderLen
 	(*p).id = (*p).data[4]
 }
 

@@ -62,6 +62,9 @@ func onHostSetUserInventory(p packet, client net.Conn) {
 	rst := BytesCombine(BuildHeader(uPtr.currentSequence, p), BuildSetUserInventory(*dest, dest.userid))
 	sendPacket(rst, uPtr.currentConnection)
 	log.Println("Send User", string(dest.username), "Inventory to host", string(uPtr.username))
+	rst = BytesCombine(BuildHeader(uPtr.currentSequence, p), BuildSetUserLoadout(*dest))
+	sendPacket(rst, uPtr.currentConnection)
+	log.Println("Send User", string(dest.username), "Loadout to host", string(uPtr.username))
 }
 
 func praseSetUserInventoryPacket(p packet, dest *inHostSetInventoryPacket) bool {

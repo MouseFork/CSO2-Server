@@ -60,22 +60,23 @@ func onLoginPacket(seq *uint8, p *packet, client *(net.Conn)) bool {
 	rst := BytesCombine(BuildHeader(seq, pkt.BasePacket), BuildUserStart(u))
 	sendPacket(rst, *client)
 	log.Println("User", string(u.loginName), "from", (*client).RemoteAddr().String(), "logged in !")
-	log.Println("Sent a user start packet to", (*client).RemoteAddr().String())
+	//log.Println("Sent a user start packet to", (*client).RemoteAddr().String())
 	//UserInfo部分
 	pkt.BasePacket.id = TypeUserInfo //发送UserInfo消息
 	info := newUserInfo(u)
 	rst = BytesCombine(BuildHeader(seq, pkt.BasePacket), BuildUserInfo(info, u.userid, true))
 	sendPacket(rst, *client)
-	log.Println("Sent a user info packet to", (*client).RemoteAddr().String())
+	//log.Println("Sent a user info packet to", (*client).RemoteAddr().String())
 	//ServerList部分
 	onServerList(seq, p, client)
 	//Inventory部分
 	pkt.BasePacket.id = TypeInventory_Create
 	rst = BytesCombine(BuildHeader(seq, pkt.BasePacket), BuildInventoryInfo(u))
 	sendPacket(rst, *client)
-	pkt.BasePacket.id = TypeInventory_Add
-	rst = BytesCombine(BuildHeader(seq, pkt.BasePacket), BuildInventoryInfo(u))
-	sendPacket(rst, *client)
+	//发送默认武器数据包
+	//pkt.BasePacket.id = TypeInventory_Add
+	//rst = BytesCombine(BuildHeader(seq, pkt.BasePacket), DeafaultInventoryItem)
+	//sendPacket(rst, *client)
 	//unlock
 	pkt.BasePacket.id = 0x5a
 	rst = BytesCombine(BuildHeader(seq, pkt.BasePacket), BuildUnlockReply())
@@ -90,7 +91,7 @@ func onLoginPacket(seq *uint8, p *packet, client *(net.Conn)) bool {
 	pkt.BasePacket.id = TypeOption
 	rst = BytesCombine(BuildHeader(seq, pkt.BasePacket), BuildBuyMenu(u.inventory))
 	sendPacket(rst, *client)
-	log.Println("Sent a user inventory packet to", (*client).RemoteAddr().String())
+	//log.Println("Sent a user inventory packet to", (*client).RemoteAddr().String())
 	return true
 }
 

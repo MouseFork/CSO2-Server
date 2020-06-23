@@ -3,9 +3,18 @@ package main
 import (
 	"log"
 	"net"
+
+	. "github.com/KouKouChan/CSO2-Server/kerlong"
 )
 
 const (
+	//房间操作，加入、暂停等
+
+	GameStart         = 0 // when a host starts a new game
+	HostJoin          = 1 // when someone joins some host's game
+	HostStop          = 3
+	LeaveResultWindow = 4
+
 	//频道以及房间
 	SendFullRoomList = 0
 	JoinRoom         = 1
@@ -118,7 +127,7 @@ const (
 	OUTCountdown      = 14
 
 	//最大房间数
-	MAXROOMNUMS         = 255
+	MAXROOMNUMS         = 0xFF
 	DefaultCountdownNum = 7
 )
 
@@ -334,50 +343,14 @@ func (rm *roomInfo) setStatus(status uint8) {
 
 func (rm roomInfo) canStartGame() bool {
 	switch rm.setting.gameModeID {
-	case deathmatch:
-	case original:
-	case originalmr:
-	case casualbomb:
-	case casualoriginal:
-	case eventmod01:
-	case eventmod02:
-	case diy:
-	case campaign1:
-	case campaign2:
-	case campaign3:
-	case campaign4:
-	case campaign5:
-	case tdm_small:
-	case de_small:
-	case madcity:
-	case madcity_team:
-	case gunteamdeath:
-	case gunteamdeath_re:
-	case stealth:
-	case teamdeath:
-	case teamdeath_mutation:
-		if rm.numPlayers < 2 {
+	case deathmatch, original, originalmr, casualbomb, casualoriginal, eventmod01, eventmod02, diy, campaign1, campaign2, campaign3, campaign4, campaign5, tdm_small, de_small, madcity, madcity_team, gunteamdeath, gunteamdeath_re, stealth, teamdeath, teamdeath_mutation, pig:
+		if rm.getNumOfReadyPlayers() < 2 {
 			return false
 		}
-	case giant:
-	case hide:
-	case hide2:
-	case hide_match:
-	case hide_origin:
-	case hide_Item:
-	case hide_multi:
-	case ghost:
-	case pig:
-	case tag:
-	case zombie:
-	case zombiecraft:
-	case zombie_commander:
-	case zombie_prop:
-	case zombie_zeta:
-		if rm.numPlayers < 2 {
+	case giant, hide, hide2, hide_match, hide_origin, hide_Item, hide_multi, ghost, tag, zombie, zombiecraft, zombie_commander, zombie_prop, zombie_zeta:
+		if rm.getNumOfRealReadyPlayers() < 2 {
 			return false
 		}
-	default:
 	}
 	return true
 }
@@ -389,6 +362,7 @@ func (rm *roomInfo) progressCountdown(num uint8) {
 	}
 	if rm.countingDown == false {
 		(*rm).countingDown = true
+		(*rm).countdown = DefaultCountdownNum
 	}
 	(*rm).countdown--
 	if rm.countdown != num {
@@ -403,7 +377,7 @@ func (rm *roomInfo) getCountdown() uint8 {
 	}
 	if rm.countdown > DefaultCountdownNum ||
 		rm.countdown < 0 {
-		(*rm).countdown = 0
+		(*rm).countdown = DefaultCountdownNum
 	}
 	return rm.countdown
 }
@@ -521,4 +495,25 @@ func (rm *roomInfo) CheckIngameStatus() {
 		}
 	}
 	rm.setStatus(StatusWaiting)
+}
+
+func (rm roomInfo) getNumOfRealReadyPlayers() int {
+	num := 0
+	for _, v := range rm.users {
+		if v.isUserReady() ||
+			v.userid == rm.hostUserID {
+			num++
+		}
+	}
+	return num
+}
+func (rm roomInfo) getNumOfReadyPlayers() int {
+	botPlayers := int(rm.setting.numCtBots + rm.setting.numTrBots)
+	if rm.setting.teamBalanceType == WithBots {
+		numCts := rm.getAllCtNum()
+		numTrs := rm.getAllTrNum()
+		requiredBalanceBots := IntAbs(numCts - numTrs)
+		botPlayers = Ternary(botPlayers > requiredBalanceBots, botPlayers, requiredBalanceBots).(int)
+	}
+	return botPlayers + rm.getNumOfRealReadyPlayers()
 }
