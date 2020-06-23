@@ -55,6 +55,22 @@ CSOL2 服务器
 
 当你要架设局域网或外网时，请打开防火墙的端口。
 
+### 使用方法
+
+1.需要有韩版的CSOL2，同时使用第三方启动器，具体教程网上有
+
+2.进入本项目的release页面下载最新版本的exe（https://github.com/KouKouChan/CSO2-Server/releases）
+
+3.建立bat文件，和游戏的bin目录同级，里面写入：
+
+    START ./bin/launcher.exe -masterip IP地址 -enablecustom -username 用户名 -password 密码
+
+4.如果你安装了汉化包，也可以再加上以下语句：
+
+    -lang schinese
+
+5.先运行本项目的exe文件启动服务器，然后打开bat文件启动客户端即可
+
 ### 编译方法
 
     1. 进入目录
