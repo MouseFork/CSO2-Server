@@ -76,6 +76,7 @@ func onNewRoom(seq *uint8, p packet, client net.Conn) {
 	if !addChannelRoom(rm,
 		uPtr.getUserChannelID(),
 		uPtr.getUserChannelServerID()) {
+		uPtr.quitRoom()
 		return
 	}
 	//生成返回数据报
@@ -88,6 +89,7 @@ func onNewRoom(seq *uint8, p packet, client net.Conn) {
 	rst = BytesCombine(BuildHeader(seq, p), buildRoomSetting(rm))
 	sendPacket(rst, client)
 	log.Println("Sent a room setting packet to", string(u.username))
+	log.Println("User", string(uPtr.username), "created room", string(rm.setting.roomName), "id", rm.id)
 }
 
 func praseNewRoomQuest(p packet, roompkt *InNewRoomPacket) bool {
@@ -121,91 +123,57 @@ func buildCreateAndJoin(rm roomInfo) []byte {
 	buf := make([]byte, 128+rm.setting.lenOfName)
 	offset := 0
 	WriteUint32(&buf, rm.hostUserID, &offset)
-
 	WriteUint8(&buf, 2, &offset)
 	WriteUint8(&buf, 2, &offset)
-
 	WriteUint16(&buf, rm.id, &offset)
-
 	WriteUint8(&buf, 5, &offset)
-
 	// special class start?
 	WriteUint64(&buf, 0xFFFFFFFFFFFFFFFF, &offset)
 	WriteString(&buf, rm.setting.roomName, &offset)
-
 	WriteUint8(&buf, 0, &offset)
-
 	WriteUint8(&buf, 0, &offset)
 	WriteUint32(&buf, 0, &offset)
 	WriteUint32(&buf, 0, &offset)
-
 	//WriteString(&buf, []byte(""), &offset)
 	WriteUint8(&buf, 0, &offset) //字符串长度为0
-
 	WriteUint16(&buf, 0, &offset)
-
 	WriteUint8(&buf, 1, &offset)
-
 	WriteUint8(&buf, rm.setting.gameModeID, &offset)
-
 	WriteUint8(&buf, rm.setting.mapID, &offset)
 	WriteUint8(&buf, 0, &offset)
-
 	WriteUint8(&buf, 1, &offset)
-
 	WriteUint8(&buf, rm.setting.winLimit, &offset)
-
 	WriteUint16(&buf, rm.setting.killLimit, &offset)
-
 	WriteUint8(&buf, 1, &offset)
-
 	WriteUint8(&buf, 0xA, &offset)
-
 	WriteUint8(&buf, 0, &offset)
-
 	WriteUint8(&buf, rm.setting.status, &offset)
-
 	WriteUint8(&buf, 0, &offset)
 	WriteUint8(&buf, 0, &offset)
 	WriteUint8(&buf, 0, &offset)
 	WriteUint8(&buf, 0, &offset)
-
 	WriteUint8(&buf, 0x5A, &offset)
-
 	WriteUint8(&buf, 0, &offset)
 	// for i:=0 ;i< 0 ;i++ {
 	// 	WriteUint8(&buf,rm.unk27[i],&offset)
 	// }
-
 	WriteUint8(&buf, 1, &offset)
-
 	WriteUint8(&buf, 0, &offset)
-
 	WriteUint8(&buf, 0, &offset)
-
 	WriteUint8(&buf, 1, &offset)
-
 	WriteUint8(&buf, 1, &offset)
-
 	WriteUint8(&buf, 0, &offset)
-
 	// if == 1, it can have 3 more bytes
 	WriteUint8(&buf, 0, &offset)
-
 	// if (this.botEnabled) { == 0
 	// 	WriteUint8(&buf,this.botDifficulty,&offset)
 	// 	WriteUint8(&buf,this.numCtBots,&offset)
 	// 	WriteUint8(&buf,this.numTrBots,&offset)
 	// }
-
 	WriteUint8(&buf, 0, &offset)
-
 	WriteUint8(&buf, 0, &offset)
-
 	WriteUint8(&buf, 0, &offset)
-
 	WriteUint8(&buf, 0, &offset)
-
 	WriteUint8(&buf, 1, &offset)
 	if rm.setting.status == StatusIngame {
 		WriteUint8(&buf, 1, &offset)
@@ -213,18 +181,12 @@ func buildCreateAndJoin(rm roomInfo) []byte {
 		WriteUint8(&buf, 0, &offset)
 	}
 	WriteUint16(&buf, 0x3E80, &offset)
-
 	WriteUint8(&buf, 0, &offset)
-
 	WriteUint8(&buf, 0, &offset)
-
 	WriteUint8(&buf, 0, &offset)
-
 	WriteUint8(&buf, 0, &offset)
-
 	WriteUint8(&buf, 3, &offset)
 	// special class end?
-
 	WriteUint8(&buf, rm.numPlayers, &offset)
 	buf = buf[:offset]
 	for i := 0; i < int(rm.numPlayers); i++ {
@@ -251,7 +213,12 @@ func CreateRoom(pkt InNewRoomPacket, u *user) roomInfo {
 		return rm
 	}
 	id := getNewRoomID(*chl)
+	if id <= 0 {
+		return rm
+	}
 	rm.id = id
+	rm.roomNumber = uint8(rm.id)
+	rm.flags = 0xFFFFFFFFFFFFFFFF
 	rm.hostUserID = 0
 	rm.users = []user{}
 	rm.parentChannel = chl.channelID

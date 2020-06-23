@@ -47,9 +47,11 @@ func onLeaveRoom(seq *uint8, p packet, client net.Conn) {
 	p.data[5] = uPtr.getUserChannelServerID()
 	p.data[6] = uPtr.getUserChannelID()
 	uPtr.quitRoom()
+	//房间状态
+	rm.CheckIngameStatus()
 	//发送房间列表给玩家
 	onRoomList(seq, &p, client)
-	log.Println("User:", string(uPtr.username), "left room")
+	log.Println("User", string(uPtr.username), "left room", string(rm.setting.roomName), "id", rm.id)
 }
 func sentUserLeaveMes(uPtr *user, rm *roomInfo, p packet) {
 	//如果玩家是房主

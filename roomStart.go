@@ -104,7 +104,7 @@ func onGameStart(seq *uint8, p packet, client net.Conn) {
 				sendPacket(rst, k.currentConnection)
 			}
 		}
-		log.Println("User", string(uPtr.username), "joined in game in room", string(rm.setting.roomName))
+		log.Println("User", string(uPtr.username), "joined in game in room", string(rm.setting.roomName), "id", rm.id)
 	}
 }
 

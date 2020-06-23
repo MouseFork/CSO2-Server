@@ -118,7 +118,7 @@ const (
 	OUTCountdown      = 14
 
 	//最大房间数
-	MAXROOMNUMS         = 1024
+	MAXROOMNUMS         = 255
 	DefaultCountdownNum = 7
 )
 
@@ -504,4 +504,21 @@ func (rm roomInfo) findDesirableTeam() int {
 	} else {
 		return CounterTerrorist
 	}
+}
+
+func (rm *roomInfo) CheckIngameStatus() {
+	if rm == nil {
+		return
+	}
+	if rm.numPlayers <= 0 {
+		rm.setStatus(StatusWaiting)
+		return
+	}
+	for _, v := range rm.users {
+		if v.currentIsIngame {
+			rm.setStatus(StatusIngame)
+			return
+		}
+	}
+	rm.setStatus(StatusWaiting)
 }

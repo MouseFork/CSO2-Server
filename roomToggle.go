@@ -46,11 +46,11 @@ func onToggleReady(seq *uint8, p packet, client net.Conn) {
 	if uPtr.currentstatus == UserNotReady {
 		uPtr.setUserStatus(UserReady)
 		u.setUserStatus(UserReady)
-		log.Println("User", string(uPtr.username), "unreadied in room")
+		log.Println("User", string(uPtr.username), "unreadied in room", string(curroom.setting.roomName), "id", curroom.id)
 	} else {
 		uPtr.setUserStatus(UserNotReady)
 		u.setUserStatus(UserNotReady)
-		log.Println("User", string(uPtr.username), "readied in room")
+		log.Println("User", string(uPtr.username), "readied in room", string(curroom.setting.roomName), "id", curroom.id)
 	}
 	//对房间所有玩家发送该玩家的状态
 	for _, v := range curroom.users {

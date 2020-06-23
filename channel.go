@@ -155,7 +155,7 @@ func delChannelRoom(roomid uint16, chlid uint8, chlsrvid uint8) bool {
 		if v.id == roomid {
 			chl.roomNum--
 			chl.rooms = append(chl.rooms[:k], chl.rooms[k+1:]...)
-			log.Println("Room", roomid, "had been deleted!")
+			log.Println("Room", string(v.setting.roomName), "id", roomid, "had been deleted !")
 			return true
 		}
 	}

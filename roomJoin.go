@@ -55,7 +55,7 @@ func onJoinRoom(seq *uint8, p packet, client net.Conn) {
 	rst := append(BuildHeader(uPtr.currentSequence, p), OUTCreateAndJoin)
 	rst = BytesCombine(rst, buildCreateAndJoin(*rm))
 	sendPacket(rst, client)
-	log.Println("User", string(uPtr.username), "joined room", string(rm.setting.roomName))
+	log.Println("User", string(uPtr.username), "joined room", string(rm.setting.roomName), "id", rm.id)
 	rst = BytesCombine(BuildHeader(uPtr.currentSequence, p), buildRoomSetting(*rm))
 	sendPacket(rst, client)
 	log.Println("Sent a room setting packet to", string(uPtr.username))
@@ -71,7 +71,7 @@ func onJoinRoom(seq *uint8, p packet, client net.Conn) {
 			sendPacket(rst, v.currentConnection)
 		}
 	}
-	log.Println("Sync user status to all player in room", string(rm.setting.roomName))
+	log.Println("Sync user status to all player in room", string(rm.setting.roomName), "id", rm.id)
 }
 
 func praseJoinRoomPacket(p packet, dest *inJoinRoomPacket) bool {

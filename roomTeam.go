@@ -7,12 +7,13 @@ import (
 	. "github.com/KouKouChan/CSO2-Server/kerlong"
 )
 
-type inChangeTeamPacket struct{
+type inChangeTeamPacket struct {
 	newTeam uint8
 }
+
 func onChangeTeam(seq *uint8, p packet, client net.Conn) {
 	var pkt inChangeTeamPacket
-	if !praseChangeTeamPacket(p,&pkt) {
+	if !praseChangeTeamPacket(p, &pkt) {
 		log.Println("Error : Client from", client.RemoteAddr().String(), "sent a illegal change team packet !")
 		return
 	}
@@ -51,7 +52,7 @@ func onChangeTeam(seq *uint8, p packet, client net.Conn) {
 	}
 	//检查是否是房主
 	if uPtr.userid != rm.hostUserID &&
-		rm.setting.areBotsEnabled != 0{
+		rm.setting.areBotsEnabled != 0 {
 		log.Println("Error : User", string(uPtr.username), "try to change team in bot mode and isn't host !")
 		return
 	}
@@ -59,30 +60,30 @@ func onChangeTeam(seq *uint8, p packet, client net.Conn) {
 	(*uPtr).currentTeam = pkt.newTeam
 	(*u).currentTeam = pkt.newTeam
 	//发送数据包
-	setteam := BuildChangTeam(u.userid,pkt.newTeam)
-	for _,v := range rm.users {
-		rst := BytesCombine(BuildHeader(v.currentSequence,p),setteam)
-		sendPacket(rst,v.currentConnection)
+	setteam := BuildChangTeam(u.userid, pkt.newTeam)
+	for _, v := range rm.users {
+		rst := BytesCombine(BuildHeader(v.currentSequence, p), setteam)
+		sendPacket(rst, v.currentConnection)
 		if rm.setting.areBotsEnabled != 0 {
 			//是房主
 			v.currentTeam = pkt.newTeam
-			setteam := BuildChangTeam(v.userid,pkt.newTeam)
-			for _,k := range rm.users{
-				rst = BytesCombine(BuildHeader(k.currentSequence,p),setteam)
-				sendPacket(rst,k.currentConnection)
+			setteam := BuildChangTeam(v.userid, pkt.newTeam)
+			for _, k := range rm.users {
+				rst = BytesCombine(BuildHeader(k.currentSequence, p), setteam)
+				sendPacket(rst, k.currentConnection)
 			}
 		}
 	}
-	log.Println("User", string(uPtr.username), "changed team to",pkt.newTeam,"in room",string(rm.setting.roomName))
+	log.Println("User", string(uPtr.username), "changed team to", pkt.newTeam, "in room", string(rm.setting.roomName), "id", rm.id)
 }
 
-func BuildChangTeam(id uint32,team uint8) [] byte {
-	buf := make([]byte,7)
+func BuildChangTeam(id uint32, team uint8) []byte {
+	buf := make([]byte, 7)
 	offset := 0
-	WriteUint8(&buf,OUTsetUserTeam,&offset)
-	WriteUint8(&buf,1,&offset)
-	WriteUint32(&buf,id,&offset)
-	WriteUint8(&buf,team,&offset)
+	WriteUint8(&buf, OUTsetUserTeam, &offset)
+	WriteUint8(&buf, 1, &offset)
+	WriteUint32(&buf, id, &offset)
+	WriteUint8(&buf, team, &offset)
 	return buf[:offset]
 }
 
