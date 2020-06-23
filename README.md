@@ -59,7 +59,7 @@ CSOL2 服务器
 
 1.需要有韩版的CSOL2，同时使用第三方启动器，具体教程网上有
 
-2.进入本项目的release页面下载最新版本的exe（https://github.com/KouKouChan/CSO2-Server/releases）
+2.进入本项目的release页面下载最新版本的exe（ https://github.com/KouKouChan/CSO2-Server/releases ）
 
 3.建立bat文件，和游戏的bin目录同级，里面写入：
 
