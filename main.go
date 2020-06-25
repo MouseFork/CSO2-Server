@@ -11,7 +11,7 @@ import (
 
 var (
 	//SERVERVERSION 版本号
-	SERVERVERSION = "v0.1.4"
+	SERVERVERSION = "v0.1.5"
 	//PORT 端口
 	PORT = 30001
 	//HOLEPUNCHPORT 端口
@@ -99,6 +99,8 @@ func RecvMessage(client net.Conn) {
 				continue
 			}
 			switch pkt.id {
+			case TypeQuickJoin:
+				onQuick(&seq, pkt, client)
 			case TypeVersion:
 				//log.Println("Recived a client version packet from", client.RemoteAddr().String())
 				onVersionPacket(&seq, pkt, client)

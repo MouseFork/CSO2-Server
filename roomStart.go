@@ -34,16 +34,31 @@ func onGameStart(seq *uint8, p packet, client net.Conn) {
 	if rm.hostUserID == uPtr.userid {
 		rm.stopCountdown()
 		rm.setStatus(StatusIngame)
+		rm.resetRoomKillNum()
+		rm.resetRoomScore()
+		rm.resetRoomWinner()
 		//设置用户状态
 		uPtr.setUserIngame(true)
+		uPtr.ResetKillNum()
+		uPtr.ResetDeadNum()
+		uPtr.ResetAssistNum()
 		u.setUserIngame(true)
 		//对非房主用户发送数据包
-		for _, v := range rm.users {
+		for k, v := range rm.users {
 			if v.userid != u.userid {
+				otherUser := getUserFromID(v.userid)
+				if otherUser == nil ||
+					otherUser.userid <= 0 {
+					continue
+				}
 				rst := BytesCombine(BuildHeader(v.currentSequence, p), buildRoomSetting(*rm))
 				sendPacket(rst, v.currentConnection)
 				if v.isUserReady() {
-					v.setUserIngame(true)
+					otherUser.ResetAssistNum()
+					otherUser.ResetKillNum()
+					otherUser.ResetDeadNum()
+					otherUser.setUserIngame(true)
+					(*rm).users[k].setUserIngame(true)
 					//连接到主机
 					rst = UDPBuild(v.currentSequence, p, 1, u.userid, u.netInfo.ExternalIpAddress, u.netInfo.ExternalServerPort)
 					sendPacket(rst, v.currentConnection)
@@ -60,9 +75,9 @@ func onGameStart(seq *uint8, p packet, client net.Conn) {
 		//给每个人发送房间内所有人的准备状态
 		p.id = TypeRoom
 		for _, v := range rm.users {
-			rst := BuildUserReadyStatus(v)
+			temp := BuildUserReadyStatus(v)
 			for _, k := range rm.users {
-				rst = BytesCombine(BuildHeader(k.currentSequence, p), rst)
+				rst := BytesCombine(BuildHeader(k.currentSequence, p), temp)
 				sendPacket(rst, k.currentConnection)
 			}
 		}
@@ -79,6 +94,9 @@ func onGameStart(seq *uint8, p packet, client net.Conn) {
 			return
 		}
 		//设置用户状态
+		uPtr.ResetKillNum()
+		uPtr.ResetDeadNum()
+		uPtr.ResetAssistNum()
 		uPtr.setUserIngame(true)
 		u.setUserIngame(true)
 		//发送房间数据
@@ -98,9 +116,9 @@ func onGameStart(seq *uint8, p packet, client net.Conn) {
 		//给每个人发送房间内所有人的准备状态
 		p.id = TypeRoom
 		for _, v := range rm.users {
-			rst = BuildUserReadyStatus(v)
+			temp := BuildUserReadyStatus(v)
 			for _, k := range rm.users {
-				rst = BytesCombine(BuildHeader(k.currentSequence, p), rst)
+				rst = BytesCombine(BuildHeader(k.currentSequence, p), temp)
 				sendPacket(rst, k.currentConnection)
 			}
 		}

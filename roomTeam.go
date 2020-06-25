@@ -61,12 +61,17 @@ func onChangeTeam(seq *uint8, p packet, client net.Conn) {
 	(*u).currentTeam = pkt.newTeam
 	//发送数据包
 	setteam := BuildChangTeam(u.userid, pkt.newTeam)
-	for _, v := range rm.users {
+	for i, v := range rm.users {
 		rst := BytesCombine(BuildHeader(v.currentSequence, p), setteam)
 		sendPacket(rst, v.currentConnection)
 		if rm.setting.areBotsEnabled != 0 {
-			//是房主
-			v.currentTeam = pkt.newTeam
+			tempu := getUserFromID(v.userid)
+			if tempu == nil ||
+				tempu.userid <= 0 {
+				continue
+			}
+			(*tempu).currentTeam = pkt.newTeam
+			(*rm).users[i].currentTeam = pkt.newTeam
 			setteam := BuildChangTeam(v.userid, pkt.newTeam)
 			for _, k := range rm.users {
 				rst = BytesCombine(BuildHeader(k.currentSequence, p), setteam)

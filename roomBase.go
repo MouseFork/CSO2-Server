@@ -189,6 +189,11 @@ type roomInfo struct {
 	numPlayers    uint8
 	users         []user
 	parentChannel uint8
+	CtScore       uint8
+	TrScore       uint8
+	CtKillNum     uint32
+	TrKillNum     uint32
+	WinnerTeam    uint8
 }
 
 //房间请求
@@ -516,4 +521,54 @@ func (rm roomInfo) getNumOfReadyPlayers() int {
 		botPlayers = Ternary(botPlayers > requiredBalanceBots, botPlayers, requiredBalanceBots).(int)
 	}
 	return botPlayers + rm.getNumOfRealReadyPlayers()
+}
+
+func (rm *roomInfo) setRoomScore(ctScore uint8, trScore uint8) {
+	if rm == nil {
+		return
+	}
+	(*rm).CtScore = ctScore
+	(*rm).TrScore = trScore
+}
+
+func (rm *roomInfo) resetRoomScore() {
+	if rm == nil {
+		return
+	}
+	(*rm).CtScore = 0
+	(*rm).TrScore = 0
+}
+func (rm *roomInfo) setRoomWinner(Winner uint8) {
+	if rm == nil {
+		return
+	}
+	(*rm).WinnerTeam = Winner
+}
+
+func (rm *roomInfo) resetRoomWinner() {
+	if rm == nil {
+		return
+	}
+	(*rm).WinnerTeam = 0
+}
+func (rm *roomInfo) CountRoomCtKill() {
+	if rm == nil {
+		return
+	}
+	(*rm).CtKillNum++
+}
+
+func (rm *roomInfo) CountRoomTrKill() {
+	if rm == nil {
+		return
+	}
+	(*rm).TrKillNum++
+}
+
+func (rm *roomInfo) resetRoomKillNum() {
+	if rm == nil {
+		return
+	}
+	(*rm).CtKillNum = 0
+	(*rm).TrKillNum = 0
 }

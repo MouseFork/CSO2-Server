@@ -101,6 +101,9 @@ type user struct {
 	currentstatus             uint8
 	currentIsIngame           bool
 	currentSequence           *uint8
+	currentKillNum            uint16
+	currentDeathNum           uint16
+	currentAssistNum          uint16
 	netInfo                   userNetInfo
 	//仓库信息
 	inventory userInventory
@@ -386,6 +389,9 @@ func getNewUser() user {
 		0,      //currentstatus
 		false,  //currentIsIngame
 		nil,    //sequence
+		0,
+		0,
+		0,
 		userNetInfo{
 			0,
 			0,
@@ -502,4 +508,43 @@ func (u *user) updateHolepunch(portId uint16, localPort uint16, externalPort uin
 	default:
 		return 0xFFFF
 	}
+}
+
+func (u *user) CountKillNum(num uint16) {
+	if u == nil {
+		return
+	}
+	(*u).currentKillNum = num
+}
+
+func (u *user) CountDeadNum(num uint16) {
+	if u == nil {
+		return
+	}
+	(*u).currentDeathNum = num
+}
+func (u *user) CountAssistNum() {
+	if u == nil {
+		return
+	}
+	(*u).currentKillNum++
+}
+func (u *user) ResetAssistNum() {
+	if u == nil {
+		return
+	}
+	(*u).currentAssistNum = 0
+}
+func (u *user) ResetKillNum() {
+	if u == nil {
+		return
+	}
+	(*u).currentKillNum = 0
+}
+
+func (u *user) ResetDeadNum() {
+	if u == nil {
+		return
+	}
+	(*u).currentDeathNum = 0
 }

@@ -32,6 +32,7 @@ const (
 	TypeBan              = 74
 	TypeOption           = 76
 	TypeFavorite         = 77
+	TypeQuickJoin        = 80
 	TypeQuickStart       = 86
 	TypeAutomatch        = 88
 	TypeFriend           = 89

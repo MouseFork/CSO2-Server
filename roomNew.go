@@ -68,9 +68,9 @@ func onNewRoom(seq *uint8, p packet, client net.Conn) {
 	}
 	uPtr.setUserRoom(rm.id)
 	u.setUserRoom(rm.id)
-	uPtr.currentTeam = CounterTerrorist
+	(*uPtr).currentTeam = CounterTerrorist
 	uPtr.setUserStatus(UserNotReady)
-	u.currentTeam = CounterTerrorist
+	(*u).currentTeam = CounterTerrorist
 	u.setUserStatus(UserNotReady)
 	//把房间加进服务器
 	if !addChannelRoom(rm,
