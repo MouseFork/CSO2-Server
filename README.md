@@ -59,7 +59,7 @@ CSOL2 服务器
 
 ### 八、使用方法
 
-1.需要有韩版的CSOL2，同时使用第三方启动器，[点击这里下载](pan.baidu.com/s/12_eV-7zwi8qA_Nb0bAFBbA) 提取码29pi
+1.需要有韩版的CSOL2，同时使用第三方启动器，[点击这里下载](https://pan.baidu.com/s/12_eV-7zwi8qA_Nb0bAFBbA) 提取码29pi
 
 2.进入本项目的release页面下载最新版本的exe（ https://github.com/KouKouChan/CSO2-Server/releases ）
 
