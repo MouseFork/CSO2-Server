@@ -97,11 +97,17 @@ func BuildGameResultHeader(rm roomInfo) []byte {
 	WriteUint8(&buf, 0, &offset)                     //unk01
 	WriteUint8(&buf, rm.setting.gameModeID, &offset) //game mod？ 0x02 0x01
 	switch rm.setting.gameModeID {
-	case original, pig, stealth:
+	case original, pig:
 		WriteUint8(&buf, rm.WinnerTeam, &offset) //winner team？ 0x02 ，生化模式貌似没有？
 		WriteUint8(&buf, rm.CtScore, &offset)    //CT winNum
 		WriteUint8(&buf, rm.TrScore, &offset)    //TR winNum
 		WriteUint16(&buf, 0, &offset)            //unk00
+	case stealth:
+		WriteUint8(&buf, rm.WinnerTeam, &offset) //winner team？ 0x02 ，生化模式貌似没有？
+		WriteUint8(&buf, rm.CtScore, &offset)    //CT winNum
+		WriteUint8(&buf, rm.TrScore, &offset)    //TR winNum
+		WriteUint8(&buf, 0, &offset)             //上半场CT winNum?
+		WriteUint8(&buf, 0, &offset)             //上半场TR winNum?
 	case deathmatch, teamdeath, teamdeath_mutation:
 		WriteUint8(&buf, rm.WinnerTeam, &offset) //winner team？ 0x02 ，生化模式貌似没有？
 		WriteUint32(&buf, rm.CtKillNum, &offset) //CT killnum
@@ -155,9 +161,11 @@ func BuildGameResultHeader(rm roomInfo) []byte {
 			WriteUint32(&temp, 0, &offset)                  //unk16 ，maybe 4 bytes
 			WriteUint8(&temp, u.currentTeam, &offset)       //user team
 			switch rm.setting.gameModeID {
-			case original, pig, stealth:
-				WriteUint32(&temp, 0, &offset) //unk17,貌似有时候不用
+			case original, pig:
+				WriteUint32(&temp, 0, &offset) //unk17
 			case deathmatch, teamdeath, teamdeath_mutation:
+			case stealth:
+				WriteUint16(&temp, 0, &offset) //unk17
 			case zombie, zombiecraft, zombie_commander, zombie_prop, zombie_zeta, ghost:
 			default:
 				WriteUint32(&temp, 0, &offset) //unk17,貌似有时候不用
