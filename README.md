@@ -61,7 +61,7 @@ CSOL2 服务器
 
     START ./bin/launcher.exe -masterip IP地址 -enablecustom -username 用户名 -password 密码
 
-4.如果你安装了汉化包，也可以再加上以下语句：
+4.IP地址指的是你的服务端IP，如果是本地那么就填192.168开头的你的IP地址，如果你要连接局域网别人的服务端那么就填别人的IP地址，如果你安装了汉化包，也可以再加上以下语句：
 
     -lang schinese
 

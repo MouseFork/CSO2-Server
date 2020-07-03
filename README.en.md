@@ -27,6 +27,6 @@ Counter-Strike Online 2 Server
 ### env
 
     Go 1.14.2
-    Use port:30001、30002
+    Use port:30001-TCP、30002-UDP
 
 ***If you want to set up a LAN or Internet Server, please open the port of firewall.***
