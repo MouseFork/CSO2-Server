@@ -21,7 +21,8 @@ const (
 	SetLoadout   = 107
 	SetBuyMenu   = 111
 
-	KillSelf   = 255 //自杀
+	//kill类型
+	KillSelf   = 0xFF //自杀
 	KillOne    = 1
 	KillTeamCt = 2
 	KillTeamTr = 1

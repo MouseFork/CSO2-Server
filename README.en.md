@@ -1,4 +1,4 @@
-# CSO2-Server
+## Counter-Strike Online 2 Server 
 
 ### Description
 

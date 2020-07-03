@@ -1,8 +1,8 @@
-# CSO2-Server
+## Counter-Strike Online 2 Server 
 
 ### 一、介绍
 
-CSOL2 服务器
+CSOL2 服务器 v0.1.5
 
 *用于韩版 Counter-Strike Online 2*
 
