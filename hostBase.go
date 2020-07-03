@@ -47,7 +47,8 @@ func onHost(seq *uint8, p packet, client net.Conn) {
 			//log.Println("Recived a setLoadout packet from", client.RemoteAddr().String())
 			onHostSetUserLoadout(p, client)
 		case SetBuyMenu:
-			log.Println("Recived a setBuyMenu packet from", client.RemoteAddr().String())
+			//log.Println("Recived a setBuyMenu packet from", client.RemoteAddr().String())
+			onHostSetUserBuyMenu(p, client)
 		case TeamChanging:
 			//log.Println("Recived a change team packet from", client.RemoteAddr().String())
 			//fmt.Println("Change packet", p.data[:p.datalen], "from", client.RemoteAddr().String())
