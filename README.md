@@ -22,6 +22,8 @@ CSOL2 服务器 v0.1.5
 
 ![Image](./photos/ingame.jpg)
 
+![Image](./photos/result.jpg)
+
 ### 二、项目计划
 
     1.先实现基本的游戏游玩功能和联机功能 ...(进行中)

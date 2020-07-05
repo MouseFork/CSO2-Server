@@ -18,6 +18,8 @@ Counter-Strike Online 2 Server
 
 ![Image](./photos/ingame.jpg)
 
+![Image](./photos/result.jpg)
+
 ### Build
 
     1. open the folder
