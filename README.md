@@ -69,7 +69,21 @@ CSOL2 服务器 v0.1.5
 
 注意：从网盘里面下载得到的start-cso2.bat文件需要修改里面的IP地址和用户名！
 
-### 八、编译环境
+### 八、Docker下使用方法
+
+1.首先你需要拥有Docker,请下载并安装Docker,同时配置好Docker,比如Docker源
+
+2.输入以下命令拉取最新版的服务端:
+
+    docker pull koukouchan/cso2-server:latest
+
+3.运行服务端
+
+    docker run -p 30001:30001 -p 30002:30002 koukouchan/cso2-server:latest
+
+4.接下来打开客户端，连接服务器
+
+### 九、编译环境
 
 *Go 1.14.2*
 
@@ -77,13 +91,13 @@ CSOL2 服务器 v0.1.5
 
 貌似建立互联网服务器需要双方玩家都能内网穿透，实测局域网能够连接，互联网无法房间内加入主机，可能需要架设虚拟局域网。
 
-### 九、编译方法
+### 十、编译方法
 
     1. 进入目录
     2. 执行命令 go build
     3. 运行生成的可执行文件即可
 
-### 十、Docker下编译方法
+### 十一、Docker下编译方法
 
 1.首先你需要拥有Docker,请下载并安装Docker,同时配置好Docker,比如Docker源
 
