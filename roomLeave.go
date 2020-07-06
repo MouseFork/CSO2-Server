@@ -57,6 +57,7 @@ func sentUserLeaveMes(uPtr *user, rm *roomInfo, p packet) {
 	//如果玩家是房主
 	if rm.hostUserID == uPtr.userid {
 		(*rm).hostUserID = rm.users[0].userid
+		(*rm).hostUserName = rm.users[0].username
 		for _, v := range rm.users {
 			rst1 := append(BuildHeader(v.currentSequence, p), OUTPlayerLeave)
 			rst1 = BytesCombine(rst1, BuildUserLeave(uPtr.userid))

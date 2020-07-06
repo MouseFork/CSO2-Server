@@ -46,14 +46,14 @@ func onNewRoom(seq *uint8, p packet, client net.Conn) {
 	}
 	//检索玩家当前房间
 	if uPtr.currentRoomId > 0 {
-		log.Println("Error :", uPtr.username, "request a new room but already in a room!")
+		log.Println("Error :", string(uPtr.username), "request a new room but already in a room!")
 		uPtr.quitRoom()
 		return
 	}
 	//创建房间
 	rm := CreateRoom(roompkt, uPtr)
 	if rm.id <= 0 {
-		log.Println("Error :", uPtr.username, "cannot create a new room !")
+		log.Println("Error :", string(uPtr.username), "cannot create a new room !")
 		return
 	}
 	//修改用户相关信息
@@ -63,7 +63,7 @@ func onNewRoom(seq *uint8, p packet, client net.Conn) {
 	rm.numPlayers = 1
 	u := rm.roomGetUser(uPtr.userid)
 	if u == nil {
-		log.Println("Error : Cannot add host ", uPtr.username, "to new room !")
+		log.Println("Error : Cannot add host ", string(uPtr.username), "to new room !")
 		return
 	}
 	uPtr.setUserRoom(rm.id)

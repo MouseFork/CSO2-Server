@@ -76,6 +76,10 @@ func BuildRoomList(seq *uint8, p packet, chl channelInfo) []byte {
 	tempoffset := 0
 	WriteUint16(&buf, chl.roomNum, &tempoffset)
 	for i := 0; i < int(chl.roomNum); i++ {
+		// name, err := GbkToUtf8(chl.rooms[i].setting.roomName)
+		// if err != nil {
+		// 	continue
+		// }
 		roombuf := make([]byte, 512)
 		offset := 0
 		WriteUint16(&roombuf, chl.rooms[i].id, &offset)
@@ -90,7 +94,8 @@ func BuildRoomList(seq *uint8, p packet, chl channelInfo) []byte {
 		WriteUint8(&roombuf, chl.rooms[i].setting.maxPlayers, &offset)
 		WriteUint8(&roombuf, chl.rooms[i].unk08, &offset)
 		WriteUint32(&roombuf, chl.rooms[i].hostUserID, &offset)
-		WriteString(&roombuf, chl.rooms[i].hostUserName, &offset)
+		hostname, _ := GbkToUtf8(chl.rooms[i].hostUserName)
+		WriteString(&roombuf, hostname, &offset)
 		WriteUint8(&roombuf, chl.rooms[i].unk11, &offset)
 		WriteUint8(&roombuf, chl.rooms[i].unk12, &offset)
 		WriteUint32(&roombuf, chl.rooms[i].unk13, &offset)
