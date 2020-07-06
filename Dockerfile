@@ -1,6 +1,7 @@
 #镜像
 FROM golang:1.14.2 as build
-ENV GO111MODULE off
+ENV GO111MODULE on
+ENV GOPROXY=https://goproxy.cn,direct
 #设置工作目录
 WORKDIR $GOPATH/src/github.com/KouKouChan/CSO2-Server
 #将服务器的go工程代码加入到docker容器中
