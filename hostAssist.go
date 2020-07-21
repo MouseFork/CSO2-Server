@@ -24,6 +24,7 @@ func onHostAssistPacket(p packet, client net.Conn) {
 		log.Println("Error : Client from", client.RemoteAddr().String(), "sent a error HostKill packet !")
 		return
 	}
+	//log.Println(p.data)
 	//找到对应用户
 	uPtr := getUserFromID(pkt.AssisterID)
 	if uPtr == nil ||
@@ -33,6 +34,7 @@ func onHostAssistPacket(p packet, client net.Conn) {
 	}
 	//修改玩家当前数据
 	uPtr.CountAssistNum()
+	//log.Println("User", string(uPtr.username), "assisted")
 }
 
 func praseInAssistPacket(p packet, dest *inAssistPacket) bool {

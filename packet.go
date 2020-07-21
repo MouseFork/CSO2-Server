@@ -62,6 +62,9 @@ func (p *packet) PrasePacket() {
 	(*p).length = GetUint16((*p).data[2:4])
 	(*p).datalen = int((*p).length) + HeaderLen
 	(*p).id = (*p).data[4]
+	if len(p.data) >= p.datalen {
+		(*p).data = (*p).data[:p.datalen]
+	}
 }
 
 //GetNextSeq 获取下一次的seq数据包序号

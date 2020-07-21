@@ -26,13 +26,13 @@ func onHostKillPacket(p packet, client net.Conn) {
 	}
 	//找到对应用户
 	uPtr := getUserFromID(pkt.killerID)
-	if uPtr == nil ||
-		uPtr.userid <= 0 {
+	if uPtr != nil &&
+		uPtr.userid > 0 {
 		//log.Println("Error : Client from", client.RemoteAddr().String(), "sent HostKill but not in server or is bot !")
-		return
+		//return
+		//修改玩家当前数据
+		uPtr.CountKillNum(pkt.killNum)
 	}
-	//修改玩家当前数据
-	uPtr.CountKillNum(pkt.killNum)
 	//修改房间数据
 	uPtr = getUserFromConnection(client)
 	if uPtr == nil ||
@@ -43,7 +43,7 @@ func onHostKillPacket(p packet, client net.Conn) {
 		uPtr.getUserChannelID(),
 		uPtr.getUserRoomID())
 	if rm == nil ||
-		rm.id <= 0 {
+		rm.id < 0 {
 		return
 	}
 	if pkt.playerTeam == CounterTerrorist {

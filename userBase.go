@@ -527,7 +527,7 @@ func (u *user) CountAssistNum() {
 	if u == nil {
 		return
 	}
-	(*u).currentKillNum++
+	(*u).currentAssistNum++
 }
 func (u *user) ResetAssistNum() {
 	if u == nil {

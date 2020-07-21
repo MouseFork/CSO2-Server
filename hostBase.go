@@ -66,7 +66,7 @@ func onHost(seq *uint8, p packet, client net.Conn) {
 			//fmt.Println("assist packet", p.data[:p.datalen], "from", client.RemoteAddr().String())
 			onHostAssistPacket(p, client)
 		case UserRevived:
-			onHostRevivedPacket(p, client)
+			//onHostRevivedPacket(p, client)
 			//fmt.Println("Revive packet", p.data[:p.datalen], "from", client.RemoteAddr().String())
 		case GameScore:
 			//fmt.Println("GameScorePacket", p.data[:p.datalen], "from", client.RemoteAddr().String())

@@ -101,7 +101,9 @@ func BuildGameResultHeader(rm roomInfo) []byte {
 		WriteUint8(&buf, rm.WinnerTeam, &offset) //winner team？ 0x02 ，生化模式貌似没有？
 		WriteUint8(&buf, rm.CtScore, &offset)    //CT winNum
 		WriteUint8(&buf, rm.TrScore, &offset)    //TR winNum
-		WriteUint16(&buf, 0, &offset)            //unk00
+		WriteUint8(&buf, 0, &offset)             //上半局CT winNum，开启阵营互换情况
+		WriteUint8(&buf, 0, &offset)             //上半局TR winNum
+		//WriteUint16(&buf, 0, &offset)            //unk00
 	case stealth:
 		WriteUint8(&buf, rm.WinnerTeam, &offset) //winner team？ 0x02 ，生化模式貌似没有？
 		WriteUint8(&buf, rm.CtScore, &offset)    //CT winNum

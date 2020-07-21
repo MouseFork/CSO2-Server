@@ -44,9 +44,10 @@ func onChangingTeam(p packet, client net.Conn) {
 		return
 	}
 	//更新数据
+	//log.Println(p.data)
 	(*destUser).currentTeam = pkt.newTeam
 	result := BuildChangingTeam(destUser.userid, pkt.newTeam)
-	for k, v := range rm.users {
+	for _, v := range rm.users {
 		u := getUserFromID(v.userid)
 		if u == nil ||
 			u.userid <= 0 {
@@ -54,16 +55,17 @@ func onChangingTeam(p packet, client net.Conn) {
 		}
 		rst := BytesCombine(BuildHeader(v.currentSequence, p), result)
 		sendPacket(rst, v.currentConnection)
-		if rm.setting.areBotsEnabled != 0 {
-			(*u).currentTeam = pkt.newTeam
-			(*rm).users[k].currentTeam = pkt.newTeam
-			//向每名玩家表示该玩家更换了队伍
-			rst1 := BuildChangingTeam(u.userid, pkt.newTeam)
-			for _, i := range rm.users {
-				rst = BytesCombine(BuildHeader(i.currentSequence, p), rst1)
-				sendPacket(rst, i.currentConnection)
-			}
-		}
+		// if rm.setting.areBotsEnabled != 0 {
+		// 	//(*u).currentTeam = pkt.newTeam
+		// 	//log.Println("User", string(u.username), "changed team", u.currentTeam)
+		// 	//(*rm).users[k].currentTeam = pkt.newTeam
+		// 	//向每名玩家表示该玩家更换了队伍
+		// 	rst1 := BuildChangingTeam(u.userid, pkt.newTeam)
+		// 	for _, i := range rm.users {
+		// 		rst = BytesCombine(BuildHeader(i.currentSequence, p), rst1)
+		// 		sendPacket(rst, i.currentConnection)
+		// 	}
+		// }
 	}
 }
 
@@ -74,8 +76,8 @@ func praseInTeamChangingPacket(p packet, dest *inHostTeamChangingPacket) bool {
 	}
 	offset := 6
 	(*dest).userId = ReadUint32(p.data, &offset)
-	(*dest).unk00 = ReadUint8(p.data, &offset)
 	(*dest).newTeam = ReadUint8(p.data, &offset)
+	(*dest).unk00 = ReadUint8(p.data, &offset)
 	return true
 }
 

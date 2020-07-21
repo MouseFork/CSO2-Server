@@ -89,7 +89,6 @@ func onNewRoom(seq *uint8, p packet, client net.Conn) {
 	rst = BytesCombine(BuildHeader(seq, p), buildRoomSetting(rm))
 	sendPacket(rst, client)
 	log.Println("Sent a room setting packet to", string(u.username))
-	log.Println("User", string(uPtr.username), "created room", string(rm.setting.roomName), "id", rm.id)
 }
 
 func praseNewRoomQuest(p packet, roompkt *InNewRoomPacket) bool {
