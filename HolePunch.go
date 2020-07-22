@@ -65,7 +65,7 @@ func RecvHolePunchMessage(data []byte, len int, client *net.UDPAddr, server *net
 	uPtr := getUserFromID(p.userId)
 	if uPtr == nil ||
 		uPtr.userid <= 0 {
-		log.Println("UDP had a packet from", client.String(), "but not logged in !")
+		//log.Println("UDP had a packet from", client.String(), "but not logged in !")
 		return
 	}
 	//更新netinfo

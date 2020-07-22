@@ -1,17 +1,21 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"math"
 	"net"
 	"os"
 	"strconv"
+
+	"github.com/garyburd/redigo/redis"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 var (
 	//SERVERVERSION 版本号
-	SERVERVERSION = "v0.1.7"
+	SERVERVERSION = "v0.1.8"
 	//PORT 端口
 	PORT = 30001
 	//HOLEPUNCHPORT 端口
@@ -26,6 +30,8 @@ var (
 		0,
 		[]user{},
 	}
+	DB    *sql.DB
+	Redis redis.Conn
 )
 
 func main() {
@@ -39,6 +45,7 @@ func main() {
 		fmt.Println("异常结束")
 	}()
 	fmt.Println("Counter-Strike Online 2 Server", SERVERVERSION)
+	fmt.Println("Initializing process ...")
 	//初始化TCP
 	server, err := net.Listen("tcp", fmt.Sprintf(":%d", PORT))
 	if err != nil {
@@ -56,11 +63,26 @@ func main() {
 		log.Fatal("Init udp socket error !\n")
 		os.Exit(-1)
 	}
+	//初始化数据库
+	DB, err = sql.Open("sqlite3", "./cso2.db")
+	if err != nil {
+		fmt.Println("Init database failed !")
+		DB = nil
+	} else {
+		fmt.Println("Database connected !")
+	}
+	//初始化Redis
+	Redis, err = redis.Dial("tcp", "localhost:6379")
+	if err != nil {
+		fmt.Println("connect to redis server failed !")
+	} else {
+		fmt.Println("Redis server connected !")
+	}
 	//延迟关闭
 	defer server.Close()
 	defer holepunchserver.Close()
-
-	fmt.Println("Initializing process ...")
+	defer DB.Close()
+	defer Redis.Close()
 	//初始化主频道服务器
 	MainServer = newMainServer()
 	//开启UDP服务
@@ -125,6 +147,9 @@ func RecvMessage(client net.Conn) {
 			case TypeFavorite:
 				//log.Println("Recived a favorite request packet from", client.RemoteAddr().String())
 				onFavorite(&seq, pkt, client)
+			case TypeOption:
+				//log.Println("Recived a favorite request packet from", client.RemoteAddr().String())
+				onOption(pkt, client)
 			default:
 				log.Println("Unknown packet", pkt.id, "from", client.RemoteAddr().String())
 			}

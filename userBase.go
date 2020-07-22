@@ -32,6 +32,8 @@ package main
 import (
 	"log"
 	"net"
+
+	. "github.com/KouKouChan/CSO2-Server/kerlong"
 )
 
 const (
@@ -167,6 +169,7 @@ func delUserWithConn(con net.Conn) bool {
 	}
 	for i, v := range UserManager.users {
 		if v.currentConnection == con {
+			CheckErr(UpdateUserToDB(v))
 			rm := getRoomFromID(v.getUserChannelServerID(),
 				v.getUserChannelID(),
 				v.getUserRoomID())
@@ -212,33 +215,36 @@ func getNewUserID() uint32 {
 	return 0
 }
 
-//假定nexonUsername是唯一
+//getUserByLogin 假定nexonUsername是唯一
 func getUserByLogin(p loginPacket) user {
-	u := findOnlineUserByName(p.gameUsername)
-	if u.userid <= 0 {
-		return getUserFromDatabase(p)
+	//查看是否有已经登陆的同名用户，待定
+	for _, v := range UserManager.users {
+		if string(v.username) == string(p.nexonUsername) {
+			return v
+		}
 	}
-	return *u
+	//查看数据库是否有该用户
+	return getUserFromDatabase(p)
 }
 
 // 理论上来讲是要从数据库里面读取用户
 // 但是目前暂时先不考虑数据库，以后加进，
 // 目前先发送新用户数据getNewUser()
-func findOnlineUserByName(name []byte) *user {
-	l := len(name)
-	if l <= 0 {
-		log.Println("User name is illegal !")
-		u := getNewUser()
-		return &u
-	}
-	for _, v := range UserManager.users {
-		if string(v.username) == string(name) {
-			return &v
-		}
-	}
-	u := getNewUser()
-	return &u
-}
+// func findOnlineUserByName(name []byte) *user {
+// 	l := len(name)
+// 	if l <= 0 {
+// 		log.Println("User name is illegal !")
+// 		u := getNewUser()
+// 		return &u
+// 	}
+// 	for _, v := range UserManager.users {
+// 		if string(v.username) == string(name) {
+// 			return &v
+// 		}
+// 	}
+// 	u := getNewUser()
+// 	return &u
+// }
 
 func (u user) isVIP() bool {
 	if u.vipLevel <= 0 {
@@ -254,12 +260,12 @@ func (u *user) setID(id uint32) {
 	(*u).userid = id
 }
 
-func (u *user) setUserName(name []byte) {
+func (u *user) setUserName(p loginPacket) {
 	if u == nil {
 		return
 	}
-	(*u).loginName = name
-	(*u).username = name
+	(*u).loginName = p.nexonUsername
+	(*u).username = p.gameUsername
 }
 
 func (u *user) setUserChannelServer(id uint8) {
@@ -404,17 +410,6 @@ func getNewUser() user {
 		},
 		createNewUserInventory(), //仓库
 	}
-}
-
-//暂定功能
-//从数据库中读取用户数据
-//如果是新用户则保存到数据库中
-func getUserFromDatabase(p loginPacket) user {
-	u := getNewUser()
-	u.setID(getNewUserID())
-	u.setUserName(p.gameUsername)
-	u.password = p.PassWd
-	return u
 }
 
 //通过连接获取用户

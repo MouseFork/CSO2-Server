@@ -108,6 +108,13 @@ func WriteString(dest *[]byte, src []byte, offset *int) int {
 	return l + 1
 }
 
+//WriteUint32Array 写入uint32数组
+func WriteUint32Array(b *[]byte, a []uint32, offset *int) {
+	for i := 0; i < len(a); i++ {
+		WriteUint32(b, a[i], offset)
+	}
+}
+
 //ReadUint8 读取1字节到uint8
 func ReadUint8(b []byte, offset *int) uint8 {
 	buf := bytes.NewBuffer(b[(*offset):])
@@ -175,6 +182,15 @@ func ReadUint64BE(b []byte, offset *int) uint64 {
 func ReadString(b []byte, offset *int, len int) []byte {
 	(*offset) += len
 	return b[(*offset)-len : (*offset)]
+}
+
+//ReadUint32Array 读取数据到uint32数组
+func ReadUint32Array(b []byte, offset *int, len int) []uint32 {
+	var buf []uint32
+	for i := 0; i < len; i++ {
+		buf = append(buf, ReadUint32(b, offset))
+	}
+	return buf
 }
 
 //GetUint16 获取b数组最前面的2字节数据
