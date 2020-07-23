@@ -240,3 +240,33 @@ func GetUint64BE(b []byte) uint64 {
 	binary.Read(buf, binary.BigEndian, &i)
 	return i
 }
+
+//CompareBytes 比较两个数组是否内容相等,相等返回true
+func CompareBytes(a []byte, b []byte) bool {
+	la, lb := len(a), len(b)
+	if la != lb {
+		return false
+	}
+	for i := 0; i < la; i++ {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
+}
+
+//BuildLongString 构建长字符串消息，包含2字节的字符串大小
+func BuildLongString(src []byte) []byte {
+	buf := make([]byte, 2)
+	offset := 0
+	WriteUint16(&buf, uint16(len(src)), &offset)
+	return BytesCombine(buf, src)
+}
+
+//BuildString 构建长字符串消息，包含2字节的字符串大小
+func BuildString(src []byte) []byte {
+	buf := make([]byte, 1)
+	offset := 0
+	WriteUint8(&buf, uint8(len(src)), &offset)
+	return BytesCombine(buf, src)
+}

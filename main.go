@@ -7,6 +7,7 @@ import (
 	"math"
 	"net"
 	"os"
+	"path/filepath"
 	"strconv"
 
 	"github.com/garyburd/redigo/redis"
@@ -15,7 +16,7 @@ import (
 
 var (
 	//SERVERVERSION 版本号
-	SERVERVERSION = "v0.1.8"
+	SERVERVERSION = "v0.1.9"
 	//PORT 端口
 	PORT = 30001
 	//HOLEPUNCHPORT 端口
@@ -64,12 +65,18 @@ func main() {
 		os.Exit(-1)
 	}
 	//初始化数据库
-	DB, err = sql.Open("sqlite3", "./cso2.db")
+	ePath, err := os.Executable()
+	if err != nil {
+		panic(err)
+	}
+	DB, err = sql.Open("sqlite3", filepath.Dir(ePath)+"/cso2.db")
+	//log.Println(filepath.Dir(ePath) + "/cso2.db")
 	if err != nil {
 		fmt.Println("Init database failed !")
 		DB = nil
 	} else {
 		fmt.Println("Database connected !")
+		defer DB.Close()
 	}
 	//初始化Redis
 	Redis, err = redis.Dial("tcp", "localhost:6379")
@@ -77,12 +84,11 @@ func main() {
 		fmt.Println("connect to redis server failed !")
 	} else {
 		fmt.Println("Redis server connected !")
+		defer Redis.Close()
 	}
 	//延迟关闭
 	defer server.Close()
 	defer holepunchserver.Close()
-	defer DB.Close()
-	defer Redis.Close()
 	//初始化主频道服务器
 	MainServer = newMainServer()
 	//开启UDP服务

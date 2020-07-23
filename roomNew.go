@@ -218,6 +218,7 @@ func CreateRoom(pkt InNewRoomPacket, u *user) roomInfo {
 	rm.id = id
 	rm.roomNumber = uint8(rm.id)
 	rm.flags = 0xFFFFFFFFFFFFFFFF
+	rm.lastflags = 0xFFFFFFFFFFFFFFFF
 	rm.hostUserID = 0
 	rm.users = []user{}
 	rm.parentChannel = chl.channelID

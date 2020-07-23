@@ -133,8 +133,9 @@ const (
 
 //房间信息
 type roomInfo struct {
-	id    uint16
-	flags uint64
+	id        uint16
+	lastflags uint64
+	flags     uint64
 	//roomName          []byte
 	roomNumber        uint8
 	passwordProtected uint8

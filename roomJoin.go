@@ -8,8 +8,8 @@ import (
 )
 
 type inJoinRoomPacket struct {
-	roomId        uint8
-	lenOfPassWord uint16
+	roomId        uint16
+	lenOfPassWord uint8
 	passWord      []byte
 }
 
@@ -40,6 +40,15 @@ func onJoinRoom(seq *uint8, p packet, client net.Conn) {
 		rm.id <= 0 {
 		log.Println("Error : User", string(uPtr.username), "try to join a null room !")
 		return
+	}
+	//检索密码
+	if rm.setting.lenOfPassWd > 0 {
+		if !CompareBytes(pkt.passWord, rm.setting.PassWd) {
+			onSendMessage(uPtr.currentSequence, uPtr.currentConnection, DialogBox,
+				GAME_ROOM_JOIN_FAILED_BAD_PASSWORD)
+			log.Println("User", string(uPtr.username), "try to join a room with error password!")
+			return
+		}
 	}
 	//检索房间状态
 	if rm.getFreeSlots() <= 0 {
@@ -79,8 +88,8 @@ func praseJoinRoomPacket(p packet, dest *inJoinRoomPacket) bool {
 		return false
 	}
 	offset := 6
-	(*dest).roomId = ReadUint8(p.data, &offset)
-	(*dest).lenOfPassWord = ReadUint16(p.data, &offset)
+	(*dest).roomId = ReadUint16(p.data, &offset)
+	(*dest).lenOfPassWord = ReadUint8(p.data, &offset)
 	(*dest).passWord = ReadString(p.data, &offset, int((*dest).lenOfPassWord))
 	return true
 }

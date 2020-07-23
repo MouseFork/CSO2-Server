@@ -14,8 +14,8 @@ type roomSettings struct {
 	unk01              uint8
 	unk02              uint32
 	unk03              uint32
-	lenOfunk09         uint8
-	unk09              []byte
+	lenOfPassWd        uint8
+	PassWd             []byte
 	unk10              uint16
 	forceCamera        uint8
 	gameModeID         uint8
@@ -64,17 +64,20 @@ type roomSettings struct {
 //创建房间设置数据包
 func buildRoomSetting(room roomInfo) []byte {
 	buf := make([]byte, 128+room.setting.lenOfName+ //实际计算是最大63字节+长度
-		room.setting.lenOfunk09+
+		room.setting.lenOfPassWd+
 		room.setting.lenOfMultiMaps)
 	offset := 0
 	WriteUint8(&buf, OUTUpdateSettings, &offset)
-	//room.flags = getFlags(room)
-	room.flags = 0xFFFFFFFFFFFFFFFF
-	WriteUint64(&buf, room.flags, &offset)
-	lowFlag := *(*uint32)(unsafe.Pointer(&room.flags))
-	flags := room.flags >> 32
+	var flags uint64
+	if room.flags != room.lastflags {
+		flags = room.lastflags
+	} else {
+		flags = room.flags
+	}
+	WriteUint64(&buf, flags, &offset)
+	lowFlag := *(*uint32)(unsafe.Pointer(&flags))
+	flags = flags >> 32
 	highFlag := *(*uint32)(unsafe.Pointer(&flags))
-
 	if lowFlag&0x1 != 0 {
 		WriteString(&buf, room.setting.roomName, &offset)
 	}
@@ -87,7 +90,7 @@ func buildRoomSetting(room roomInfo) []byte {
 		WriteUint32(&buf, room.setting.unk03, &offset)
 	}
 	if lowFlag&0x8 != 0 {
-		WriteString(&buf, room.setting.unk09, &offset)
+		WriteString(&buf, room.setting.PassWd, &offset)
 	}
 	if lowFlag&0x10 != 0 {
 		WriteUint16(&buf, room.setting.unk10, &offset)
@@ -219,7 +222,6 @@ func getFlags(room roomInfo) uint64 {
 	lowFlag := 0
 	highFlag := 0
 
-	/* tslint:disable: no-bitwise */
 	if room.setting.roomName != nil {
 		lowFlag |= 0x1
 	}
@@ -231,7 +233,7 @@ func getFlags(room roomInfo) uint64 {
 		room.setting.unk03 != 0 {
 		lowFlag |= 0x4
 	}
-	if room.setting.unk09 != nil {
+	if room.setting.PassWd != nil {
 		lowFlag |= 0x8
 	}
 	if room.setting.unk10 != 0 {
@@ -348,7 +350,6 @@ func getFlags(room roomInfo) uint64 {
 	if room.setting.respawnTime != 0 {
 		highFlag |= 0x10
 	}
-	/* tslint:enable: no-bitwise */
 
 	flags := uint64(highFlag)
 	flags = flags << 32
@@ -373,8 +374,13 @@ func (dest *roomInfo) toUpdateSetting(src upSettingReq) {
 		(*dest).setting.unk03 = src.unk03
 	}
 	if lowFlag&0x8 != 0 {
-		(*dest).setting.lenOfunk09 = src.lenOfunk09
-		(*dest).setting.unk09 = src.unk09
+		(*dest).setting.lenOfPassWd = src.lenOfpasswd
+		(*dest).setting.PassWd = src.passwd
+		if dest.setting.lenOfPassWd > 0 {
+			(*dest).passwordProtected = 1
+		} else {
+			(*dest).passwordProtected = 0
+		}
 	}
 	if lowFlag&0x10 != 0 {
 		(*dest).setting.unk10 = src.unk10
@@ -500,5 +506,5 @@ func (dest *roomInfo) toUpdateSetting(src upSettingReq) {
 	if highFlag&0x10 != 0 {
 		(*dest).setting.respawnTime = src.respawnTime
 	}
-
+	(*dest).lastflags = src.flags
 }

@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"net"
-	"strconv"
 	"unsafe"
 
 	. "github.com/KouKouChan/CSO2-Server/kerlong"
@@ -17,8 +16,8 @@ type upSettingReq struct {
 	unk01              uint8
 	unk02              uint32
 	unk03              uint32
-	lenOfunk09         uint8
-	unk09              []byte
+	lenOfpasswd        uint8
+	passwd             []byte
 	unk10              uint16
 	forceCamera        uint8
 	gameModeID         uint8
@@ -104,11 +103,13 @@ func onUpdateRoom(seq *uint8, p packet, client net.Conn) {
 	curroom.toUpdateSetting(pkt)
 	p.id = TypeRoom
 	//向房间所有玩家发送更新报文
-	for k, v := range curroom.users {
-		rst := BytesCombine(BuildHeader(v.currentSequence, p), buildRoomSetting(*curroom))
+	settingpkt := buildRoomSetting(*curroom)
+	for _, v := range curroom.users {
+		rst := BytesCombine(BuildHeader(v.currentSequence, p), settingpkt)
 		sendPacket(rst, v.currentConnection)
-		log.Println("["+strconv.Itoa(k+1)+"/"+strconv.Itoa(int((*curroom).numPlayers))+"] Updated room for", v.currentConnection.RemoteAddr().String(), "!")
+		//log.Println("["+strconv.Itoa(k+1)+"/"+strconv.Itoa(int((*curroom).numPlayers))+"] Updated room for", v.currentConnection.RemoteAddr().String(), "!")
 	}
+	(*curroom).lastflags = curroom.flags
 	log.Println("Host", string(uPtr.username), "updated room", string(curroom.setting.roomName), "id", curroom.id)
 }
 
@@ -135,8 +136,8 @@ func praseUpdateRoomPacket(src packet, dest *upSettingReq) bool {
 		(*dest).unk03 = ReadUint32(src.data, &offset)
 	}
 	if lowFlag&0x8 != 0 {
-		(*dest).lenOfunk09 = ReadUint8(src.data, &offset)
-		(*dest).unk09 = ReadString(src.data, &offset, int((*dest).lenOfRoomName))
+		(*dest).lenOfpasswd = ReadUint8(src.data, &offset)
+		(*dest).passwd = ReadString(src.data, &offset, int((*dest).lenOfpasswd))
 	}
 	if lowFlag&0x10 != 0 {
 		(*dest).unk10 = ReadUint16(src.data, &offset)
