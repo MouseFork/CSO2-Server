@@ -16,7 +16,7 @@ import (
 
 var (
 	//SERVERVERSION 版本号
-	SERVERVERSION = "v0.1.9"
+	SERVERVERSION = "v0.2.0"
 	//PORT 端口
 	PORT = 30001
 	//HOLEPUNCHPORT 端口
@@ -156,6 +156,8 @@ func RecvMessage(client net.Conn) {
 			case TypeOption:
 				//log.Println("Recived a favorite request packet from", client.RemoteAddr().String())
 				onOption(pkt, client)
+			case TypePlayerInfo:
+				onPlayerInfo(pkt, client)
 			default:
 				log.Println("Unknown packet", pkt.id, "from", client.RemoteAddr().String())
 			}

@@ -543,3 +543,24 @@ func (u *user) ResetDeadNum() {
 	}
 	(*u).currentDeathNum = 0
 }
+
+func (u *user) SetSignature(sig []byte) {
+	if u == nil {
+		return
+	}
+	(*u).signature = sig
+}
+
+func (u *user) SetAvatar(id uint16) {
+	if u == nil {
+		return
+	}
+	(*u).avatar = id
+}
+
+func (u *user) SetTitle(id uint16) {
+	if u == nil {
+		return
+	}
+	(*u).titleId = id
+}

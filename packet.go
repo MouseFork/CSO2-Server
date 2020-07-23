@@ -28,6 +28,7 @@ const (
 	TypeRoom             = 65
 	TypeChat             = 67
 	TypeHost             = 68
+	TypePlayerInfo       = 69
 	TypeUdp              = 70
 	TypeBan              = 74
 	TypeOption           = 76
