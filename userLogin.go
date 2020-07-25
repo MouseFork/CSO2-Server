@@ -92,6 +92,10 @@ func onLoginPacket(seq *uint8, p *packet, client *(net.Conn)) bool {
 	rst = BytesCombine(BuildHeader(seq, pkt.BasePacket), BuildBuyMenu(u.inventory))
 	sendPacket(rst, *client)
 	//log.Println("Sent a user inventory packet to", (*client).RemoteAddr().String())
+	//achievement
+
+	//friends
+
 	return true
 }
 
