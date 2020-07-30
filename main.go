@@ -6,21 +6,19 @@ import (
 	"log"
 	"math"
 	"net"
-	"os"
-	"path/filepath"
 	"strconv"
 
+	. "github.com/KouKouChan/CSO2-Server/configure"
+	. "github.com/KouKouChan/CSO2-Server/database/redis"
+	. "github.com/KouKouChan/CSO2-Server/database/sqlite"
+	. "github.com/KouKouChan/CSO2-Server/kerlong"
 	"github.com/garyburd/redigo/redis"
 	_ "github.com/mattn/go-sqlite3"
 )
 
 var (
 	//SERVERVERSION 版本号
-	SERVERVERSION = "v0.2.0"
-	//PORT 端口
-	PORT = 30001
-	//HOLEPUNCHPORT 端口
-	HOLEPUNCHPORT = 30002
+	SERVERVERSION = "v0.3.0"
 	//MainServer 主服务器
 	MainServer = serverManager{
 		0,
@@ -33,6 +31,7 @@ var (
 	}
 	DB    *sql.DB
 	Redis redis.Conn
+	Conf  CSO2Conf
 )
 
 func main() {
@@ -47,54 +46,60 @@ func main() {
 	}()
 	fmt.Println("Counter-Strike Online 2 Server", SERVERVERSION)
 	fmt.Println("Initializing process ...")
+	//获取路径
+	path, err := GetExePath()
+	if err != nil {
+		panic(err)
+	}
+	//读取配置
+	Conf.InitConf(path)
 	//初始化TCP
-	server, err := net.Listen("tcp", fmt.Sprintf(":%d", PORT))
+	server, err := net.Listen("tcp", fmt.Sprintf(":%d", Conf.PORT))
 	if err != nil {
 		log.Fatal("Init tcp socket error !\n")
-		os.Exit(-1)
+		panic(err)
 	}
+	defer server.Close()
 	//初始化UDP
-	udpAddr, err := net.ResolveUDPAddr("udp", fmt.Sprintf(":%d", HOLEPUNCHPORT))
+	udpAddr, err := net.ResolveUDPAddr("udp", fmt.Sprintf(":%d", Conf.HolePunchPort))
 	if err != nil {
 		log.Fatal("Init udp addr error !\n")
-		os.Exit(-1)
+		panic(err)
 	}
 	holepunchserver, err := net.ListenUDP("udp", udpAddr)
 	if err != nil {
 		log.Fatal("Init udp socket error !\n")
-		os.Exit(-1)
-	}
-	//初始化数据库
-	ePath, err := os.Executable()
-	if err != nil {
 		panic(err)
 	}
-	DB, err = sql.Open("sqlite3", filepath.Dir(ePath)+"/cso2.db")
-	//log.Println(filepath.Dir(ePath) + "/cso2.db")
-	if err != nil {
-		fmt.Println("Init database failed !")
-		DB = nil
-	} else {
-		fmt.Println("Database connected !")
-		defer DB.Close()
+	defer holepunchserver.Close()
+	//初始化数据库
+	if Conf.EnableDataBase != 0 {
+		DB, err = InitDatabase(path + "\\cso2.db")
+		if err != nil {
+			fmt.Println("Init database failed !")
+			Conf.EnableDataBase = 0
+		} else {
+			fmt.Println("Database connected !")
+			defer DB.Close()
+		}
 	}
 	//初始化Redis
-	Redis, err = redis.Dial("tcp", "localhost:6379")
-	if err != nil {
-		fmt.Println("connect to redis server failed !")
-	} else {
-		fmt.Println("Redis server connected !")
-		defer Redis.Close()
+	if Conf.EnableRedis != 0 {
+		Redis, err := InitRedis(Conf.RedisIP + ":" + strconv.Itoa(int(Conf.RedisPort)))
+		if err != nil {
+			fmt.Println("connect to redis server failed !")
+			Conf.EnableRedis = 0
+		} else {
+			fmt.Println("Redis server connected !")
+			defer Redis.Close()
+		}
 	}
-	//延迟关闭
-	defer server.Close()
-	defer holepunchserver.Close()
 	//初始化主频道服务器
 	MainServer = newMainServer()
 	//开启UDP服务
 	go startHolePunchServer(holepunchserver)
 	//开启TCP服务
-	fmt.Println("Server is running at", "[AnyAdapter]:"+strconv.Itoa(PORT))
+	fmt.Println("Server is running at", "[AnyAdapter]:"+strconv.Itoa(int(Conf.PORT)))
 	for {
 		client, err := server.Accept()
 		if err != nil {

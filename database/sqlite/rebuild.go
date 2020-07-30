@@ -1,0 +1,5 @@
+package sqlite
+
+func RebuildDataBase() {
+
+}

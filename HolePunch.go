@@ -31,7 +31,7 @@ type InUDPmsg struct {
 
 func startHolePunchServer(server *net.UDPConn) {
 	defer server.Close()
-	fmt.Println("Server UDPholepunch is running at", "[AnyAdapter]:"+strconv.Itoa(HOLEPUNCHPORT))
+	fmt.Println("Server UDPholepunch is running at", "[AnyAdapter]:"+strconv.Itoa(int(Conf.HolePunchPort)))
 	for {
 		data := make([]byte, 1024)
 		n, ClientAddr, err := server.ReadFromUDP(data)
@@ -79,14 +79,6 @@ func RecvHolePunchMessage(data []byte, len int, client *net.UDPAddr, server *net
 	//发送返回数据
 	rst := BuildUDPHolepunch(index)
 	server.WriteToUDP(rst, client)
-	// log.Println(uPtr.netInfo.ExternalIpAddress,
-	// 	uPtr.netInfo.ExternalServerPort,
-	// 	uPtr.netInfo.ExternalClientPort,
-	// 	uPtr.netInfo.ExternalTvPort,
-	// 	uPtr.netInfo.LocalIpAddress,
-	// 	uPtr.netInfo.LocalServerPort,
-	// 	uPtr.netInfo.LocalClientPort,
-	// 	uPtr.netInfo.LocalTvPort)
 }
 
 func praseUDPpacket(data []byte, len int, dest *InUDPmsg) bool {

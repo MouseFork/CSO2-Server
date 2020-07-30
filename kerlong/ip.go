@@ -52,3 +52,24 @@ func GetIP() string {
 	}
 	return "Error"
 }
+
+//IsSameLan 判断两个IP是否处于同一局域网
+func IsSameLan(a []byte, b []byte) bool {
+	idx, i := 0, 0
+	for {
+		if len(a) <= i || len(b) <= i {
+			return false
+		}
+		if a[i] == b[i] {
+			if a[i] == '.' {
+				idx++
+				if idx == 3 {
+					return true
+				}
+			}
+		} else {
+			return false
+		}
+		i++
+	}
+}

@@ -181,6 +181,6 @@ func BuildUserStart(u user) []byte {
 	WriteString(&userbuf, u.loginName, &offset)
 	WriteString(&userbuf, u.username, &offset)
 	WriteUint8(&userbuf, 1, &offset)
-	WriteUint16(&userbuf, uint16(HOLEPUNCHPORT), &offset)
+	WriteUint16(&userbuf, uint16(Conf.HolePunchPort), &offset)
 	return userbuf
 }
