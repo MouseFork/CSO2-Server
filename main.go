@@ -12,6 +12,10 @@ import (
 	. "github.com/KouKouChan/CSO2-Server/database/redis"
 	. "github.com/KouKouChan/CSO2-Server/database/sqlite"
 	. "github.com/KouKouChan/CSO2-Server/kerlong"
+	. "github.com/KouKouChan/CSO2-Server/model/user"
+	. "github.com/KouKouChan/CSO2-Server/model/usermanager"
+	. "github.com/KouKouChan/CSO2-Server/server"
+	. "github.com/KouKouChan/CSO2-Server/verbose"
 	"github.com/garyburd/redigo/redis"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -19,19 +23,9 @@ import (
 var (
 	//SERVERVERSION 版本号
 	SERVERVERSION = "v0.3.0"
-	//MainServer 主服务器
-	MainServer = serverManager{
-		0,
-		[]channelServer{},
-	}
-	//UserManager 全局用户管理
-	UserManager = userManager{
-		0,
-		[]user{},
-	}
-	DB    *sql.DB
-	Redis redis.Conn
-	Conf  CSO2Conf
+	DB            *sql.DB
+	Redis         redis.Conn
+	Conf          CSO2Conf
 )
 
 func main() {
@@ -53,22 +47,29 @@ func main() {
 	}
 	//读取配置
 	Conf.InitConf(path)
+	Level = Conf.DebugLevel
+	LogFile = Conf.LogFile
+	IsConsole = Conf.EnableConsole
+	//初始化日志记录器
+	if LogFile != 0 {
+		InitLoger(path)
+	}
 	//初始化TCP
 	server, err := net.Listen("tcp", fmt.Sprintf(":%d", Conf.PORT))
 	if err != nil {
-		log.Fatal("Init tcp socket error !\n")
+		log.Println("Init tcp socket error !\n")
 		panic(err)
 	}
 	defer server.Close()
 	//初始化UDP
 	udpAddr, err := net.ResolveUDPAddr("udp", fmt.Sprintf(":%d", Conf.HolePunchPort))
 	if err != nil {
-		log.Fatal("Init udp addr error !\n")
+		log.Println("Init udp addr error !\n")
 		panic(err)
 	}
 	holepunchserver, err := net.ListenUDP("udp", udpAddr)
 	if err != nil {
-		log.Fatal("Init udp socket error !\n")
+		log.Println("Init udp socket error !\n")
 		panic(err)
 	}
 	defer holepunchserver.Close()
@@ -95,18 +96,18 @@ func main() {
 		}
 	}
 	//初始化主频道服务器
-	MainServer = newMainServer()
+	MainServer = NewMainServer()
 	//开启UDP服务
-	go startHolePunchServer(holepunchserver)
+	go StartHolePunchServer(strconv.Itoa(int(Conf.HolePunchPort)), holepunchserver)
 	//开启TCP服务
 	fmt.Println("Server is running at", "[AnyAdapter]:"+strconv.Itoa(int(Conf.PORT)))
 	for {
 		client, err := server.Accept()
 		if err != nil {
-			log.Fatal("Server Accept data error !\n")
+			DebugInfo(2, "Server Accept data error !\n")
 			continue
 		}
-		log.Println("Server accept a new connection request at", client.RemoteAddr().String())
+		DebugInfo(2, "Server accept a new connection request at", client.RemoteAddr().String())
 		go RecvMessage(client)
 	}
 }
@@ -128,46 +129,35 @@ func RecvMessage(client net.Conn) {
 			//log.Println("Prasing a packet from", client.RemoteAddr().String())
 			pkt.PrasePacket()
 			if !pkt.IsGoodPacket {
-				log.Println("Recived a illegal packet from", client.RemoteAddr().String())
+				DebugInfo(2, "Recived a illegal packet from", client.RemoteAddr().String())
 				continue
 			}
 			switch pkt.id {
 			case TypeQuickJoin:
 				onQuick(&seq, pkt, client)
 			case TypeVersion:
-				//log.Println("Recived a client version packet from", client.RemoteAddr().String())
 				onVersionPacket(&seq, pkt, client)
 			case TypeLogin:
-				//log.Println("Recived a login request packet from", client.RemoteAddr().String())
-				//if ! {
-				//log.Println("Recived a illegal packet from", client.RemoteAddr().String())
-				//}
 				onLoginPacket(&seq, &pkt, &client)
 			case TypeRequestChannels:
-				//log.Println("Recived a ChannelList request packet from", client.RemoteAddr().String())
 				onServerList(&seq, &pkt, &client)
 			case TypeRequestRoomList:
-				//log.Println("Recived a RoomList request packet from", client.RemoteAddr().String())
 				onRoomList(&seq, &pkt, client)
 			case TypeRoom:
-				//log.Println("Recived a Room request packet from", client.RemoteAddr().String())
 				onRoomRequest(&seq, pkt, client)
 			case TypeHost:
-				//log.Println("Recived a Host request packet from", client.RemoteAddr().String())
 				onHost(&seq, pkt, client)
 			case TypeFavorite:
-				//log.Println("Recived a favorite request packet from", client.RemoteAddr().String())
 				onFavorite(&seq, pkt, client)
 			case TypeOption:
-				//log.Println("Recived a favorite request packet from", client.RemoteAddr().String())
 				onOption(pkt, client)
 			case TypePlayerInfo:
 				onPlayerInfo(pkt, client)
 			default:
-				log.Println("Unknown packet", pkt.id, "from", client.RemoteAddr().String())
+				DebugInfo(2, "Unknown packet", pkt.id, "from", client.RemoteAddr().String())
 			}
 		} else {
-			log.Println("client", client.RemoteAddr().String(), "closed the connection")
+			DebugInfo(1, "client", client.RemoteAddr().String(), "closed the connection")
 			delUserWithConn(client)
 			client.Close() //关闭con
 			return

@@ -3,9 +3,9 @@ package main
 import (
 	"log"
 	"net"
-	"os"
 
 	. "github.com/KouKouChan/CSO2-Server/kerlong"
+	. "github.com/KouKouChan/CSO2-Server/verbose"
 )
 
 const (
@@ -78,8 +78,8 @@ func newMainServer() serverManager {
 	}
 	chl := newChannelServer([]byte(DefalutServerName))
 	if !addChannelServer(&srvmgr, &chl) {
-		log.Println("Error : Unable to initializing main server !")
-		os.Exit(-1)
+		DebugInfo(2, "Error : Unable to initializing main server !")
+		log.Fatalln("")
 	}
 	return srvmgr
 }

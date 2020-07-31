@@ -1,10 +1,10 @@
 package main
 
 import (
-	"log"
 	"net"
 
 	. "github.com/KouKouChan/CSO2-Server/kerlong"
+	. "github.com/KouKouChan/CSO2-Server/verbose"
 )
 
 type loginPacket struct {
@@ -42,7 +42,7 @@ func onLoginPacket(seq *uint8, p *packet, client *(net.Conn)) bool {
 	//获得用户数据，待定
 	u := getUserByLogin(pkt)
 	if u.userid <= 0 {
-		log.Println("Error : User", string(pkt.gameUsername), "from", (*client).RemoteAddr().String(), "login failed !")
+		DebugInfo(2, "Error : User", string(pkt.gameUsername), "from", (*client).RemoteAddr().String(), "login failed !")
 		(*client).Close()
 		return false
 	}
@@ -51,7 +51,7 @@ func onLoginPacket(seq *uint8, p *packet, client *(net.Conn)) bool {
 	u.currentSequence = seq
 	//把用户加入用户管理器
 	if !addUser(&u) {
-		log.Println("Error : User", string(pkt.gameUsername), "from", (*client).RemoteAddr().String(), "login failed !")
+		DebugInfo(2, "Error : User", string(pkt.gameUsername), "from", (*client).RemoteAddr().String(), "login failed !")
 		(*client).Close()
 		return false
 	}
@@ -59,7 +59,7 @@ func onLoginPacket(seq *uint8, p *packet, client *(net.Conn)) bool {
 	pkt.BasePacket.id = TypeUserStart //UserStart消息标识
 	rst := BytesCombine(BuildHeader(seq, pkt.BasePacket), BuildUserStart(u))
 	sendPacket(rst, *client)
-	log.Println("User", string(u.loginName), "from", (*client).RemoteAddr().String(), "logged in !")
+	DebugInfo(1, "User", string(u.loginName), "from", (*client).RemoteAddr().String(), "logged in !")
 	//log.Println("Sent a user start packet to", (*client).RemoteAddr().String())
 	//UserInfo部分
 	pkt.BasePacket.id = TypeUserInfo //发送UserInfo消息
