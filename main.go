@@ -1,20 +1,29 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"math"
 	"net"
 	"strconv"
 
+	. "github.com/KouKouChan/CSO2-Server/blademaster"
 	. "github.com/KouKouChan/CSO2-Server/configure"
 	. "github.com/KouKouChan/CSO2-Server/database/redis"
 	. "github.com/KouKouChan/CSO2-Server/database/sqlite"
 	. "github.com/KouKouChan/CSO2-Server/kerlong"
-	. "github.com/KouKouChan/CSO2-Server/model/user"
-	. "github.com/KouKouChan/CSO2-Server/model/usermanager"
 	. "github.com/KouKouChan/CSO2-Server/server"
+	. "github.com/KouKouChan/CSO2-Server/server/channel"
+	. "github.com/KouKouChan/CSO2-Server/server/database"
+	. "github.com/KouKouChan/CSO2-Server/server/favorate"
+	. "github.com/KouKouChan/CSO2-Server/server/host"
+	. "github.com/KouKouChan/CSO2-Server/server/inventory"
+	. "github.com/KouKouChan/CSO2-Server/server/message"
+	. "github.com/KouKouChan/CSO2-Server/server/packet"
+	. "github.com/KouKouChan/CSO2-Server/server/playerInfo"
+	. "github.com/KouKouChan/CSO2-Server/server/quick"
+	. "github.com/KouKouChan/CSO2-Server/server/room"
+	. "github.com/KouKouChan/CSO2-Server/server/user"
 	. "github.com/KouKouChan/CSO2-Server/verbose"
 	"github.com/garyburd/redigo/redis"
 	_ "github.com/mattn/go-sqlite3"
@@ -23,7 +32,6 @@ import (
 var (
 	//SERVERVERSION 版本号
 	SERVERVERSION = "v0.3.0"
-	DB            *sql.DB
 	Redis         redis.Conn
 	Conf          CSO2Conf
 )

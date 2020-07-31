@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"net"
 
-	. "github.com/KouKouChan/CSO2-Server/configure"
 	. "github.com/KouKouChan/CSO2-Server/kerlong"
 	. "github.com/KouKouChan/CSO2-Server/model/packet"
+	. "github.com/KouKouChan/CSO2-Server/model/usermanager"
 	. "github.com/KouKouChan/CSO2-Server/server/packet"
 	. "github.com/KouKouChan/CSO2-Server/verbose"
 )
@@ -46,18 +46,18 @@ func RecvHolePunchMessage(data []byte, len int, client *net.UDPAddr, server *net
 	//找到对应玩家
 	uPtr := GetUserFromID(p.UserId)
 	if uPtr == nil ||
-		uPtr.userid <= 0 {
+		uPtr.Userid <= 0 {
 		//log.Println("UDP had a packet from", client.String(), "but not logged in !")
 		return
 	}
 	//更新netinfo
-	index := uPtr.updateHolepunch(p.PortId, p.Port, uint16(client.Port))
+	index := uPtr.UpdateHolepunch(p.PortId, p.Port, uint16(client.Port))
 	if index == 0xFFFF {
-		DebugInfo(2, "Error : User", uPtr.username, "update Holepunch failed !")
+		DebugInfo(2, "Error : User", uPtr.Username, "update Holepunch failed !")
 		return
 	}
-	(*uPtr).netInfo.ExternalIpAddress = externalIPAddress
-	(*uPtr).netInfo.LocalIpAddress = p.IpAddress
+	(*uPtr).NetInfo.ExternalIpAddress = externalIPAddress
+	(*uPtr).NetInfo.LocalIpAddress = p.IpAddress
 	//发送返回数据
 	rst := BuildUDPHolepunch(index)
 	server.WriteToUDP(rst, client)

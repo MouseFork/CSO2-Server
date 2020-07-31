@@ -3,8 +3,7 @@ package channel
 import (
 	"sync"
 
-	. "github.com/KouKouChan/CSO2-Server/model/channel"
-	. "github.com/KouKouChan/CSO2-Server/model/room"
+	. "github.com/KouKouChan/CSO2-Server/blademaster"
 	. "github.com/KouKouChan/CSO2-Server/verbose"
 )
 
@@ -13,7 +12,7 @@ var (
 	DefalutChannelName2 = "CSO2-Channel[2/2]"
 )
 
-func newChannelInfo(name []byte, chlsrv ChannelServer) ChannelInfo {
+func NewChannelInfo(name []byte, chlsrv ChannelServer) ChannelInfo {
 	var mutex sync.Mutex
 	return ChannelInfo{
 		getNewChannelID(chlsrv),
@@ -31,7 +30,7 @@ func newChannelInfo(name []byte, chlsrv ChannelServer) ChannelInfo {
 }
 
 //getNewChannelID() 暂定
-func getNewChannelID(chlsrv ChannelServer) uint8 {
+func GetNewChannelID(chlsrv ChannelServer) uint8 {
 	if chlsrv.ChannelCount > MAXCHANNELNUM {
 		DebugInfo(2, "Channel is too much ! Unable to create more !")
 		//ID=0 是非法的
@@ -64,7 +63,7 @@ func GetChannelWithID(id uint8, chlsrv ChannelServer) *ChannelInfo {
 }
 
 //添加房间,一次只能一个协程修改该频道
-func addChannelRoom(room RoomInfo, chlid uint8, chlsrvid uint8) bool {
+func AddChannelRoom(room RoomInfo, chlid uint8, chlsrvid uint8) bool {
 	chlsrv := GetChannelServerWithID(chlsrvid)
 	if chlsrv.ServerIndex <= 0 {
 		DebugInfo(2, "Add room to a null channelServer!")
@@ -97,7 +96,7 @@ func addChannelRoom(room RoomInfo, chlid uint8, chlsrvid uint8) bool {
 }
 
 //删除频道房间
-func delChannelRoom(roomid uint16, chlid uint8, chlsrvid uint8) bool {
+func DelChannelRoom(roomid uint16, chlid uint8, chlsrvid uint8) bool {
 	chlsrv := GetChannelServerWithID(chlsrvid)
 	if chlsrv.ServerIndex <= 0 {
 		DebugInfo(2, "Remove room to a null channelServer!")

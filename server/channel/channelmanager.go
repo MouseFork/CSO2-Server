@@ -31,7 +31,7 @@ func NewMainServer() ServerManager {
 }
 
 //主服务器里加频道服务器,一次只能一个协程访问
-func addChannelServer(dest *ServerManager, src *ChannelServer) bool {
+func AddChannelServer(dest *ServerManager, src *ChannelServer) bool {
 	GlobalMutex.Lock()
 	MainServerMutex.Lock()
 	defer GlobalMutex.Unlock()
@@ -56,7 +56,7 @@ func addChannelServer(dest *ServerManager, src *ChannelServer) bool {
 }
 
 //新建频道服务器
-func newChannelServer(name []byte) ChannelServer {
+func NewChannelServer(name []byte) ChannelServer {
 	chlsrv := ChannelServer{
 		getNewChannelServerID(),
 		1,
@@ -69,7 +69,7 @@ func newChannelServer(name []byte) ChannelServer {
 }
 
 //频道服务器里加频道,一次只能一个协程访问
-func addChannel(dest *ChannelServer, src *ChannelInfo) bool {
+func AddChannel(dest *ChannelServer, src *ChannelInfo) bool {
 	GlobalMutex.Lock()
 	MainServerMutex.Lock()
 	defer GlobalMutex.Unlock()
@@ -94,7 +94,7 @@ func addChannel(dest *ChannelServer, src *ChannelInfo) bool {
 }
 
 //新的频道服务器ID,一次只能一个协程访问
-func getNewChannelServerID() uint8 {
+func GetNewChannelServerID() uint8 {
 	GlobalMutex.Lock()
 	MainServerMutex.Lock()
 	defer GlobalMutex.Unlock()
