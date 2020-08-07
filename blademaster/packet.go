@@ -8,12 +8,18 @@ import (
 
 type (
 	Packet struct {
+		Data      []byte
+		Sequence  uint8
+		Length    uint16
+		Id        uint8
+		CurOffset int
+	}
+	Header struct {
 		Data         []byte
 		Datalen      int
 		IsGoodPacket bool
 		Sequence     uint8
 		Length       uint16
-		Id           uint8
 		CurOffset    int
 	}
 	//房间请求
@@ -73,24 +79,19 @@ const (
 	HeaderLen   = 4
 )
 
-func (p *Packet) PrasePacket() {
+func (p *Header) PraseHeadPacket() {
 	if p.Data[0] != TypeSignature {
 		p.IsGoodPacket = false
 		return
 	}
-	p.CurOffset = 1
 	p.IsGoodPacket = true
 	p.Sequence = ReadUint8(p.Data, &p.CurOffset)
 	p.Length = ReadUint16(p.Data, &p.CurOffset)
-	p.Id = ReadUint8(p.Data, &p.CurOffset)
 	p.Datalen = int(p.Length) + HeaderLen
-	if len(p.Data) >= p.Datalen {
-		p.Data = p.Data[:p.Datalen]
-	}
 }
 
 func (p *Packet) PraseRoomPacket(dest *InRoomPaket) bool {
-	if p.Datalen-HeaderLen < 2 {
+	if p.Length < 2 {
 		return false
 	}
 	dest.InRoomType = ReadUint8(p.Data, &p.CurOffset)
@@ -98,7 +99,7 @@ func (p *Packet) PraseRoomPacket(dest *InRoomPaket) bool {
 }
 
 func (p *Packet) PraseQuickPacket(dest *InQuickPacket) bool {
-	if p.datalen-HeaderLen < 2 {
+	if p.Length < 2 {
 		return false
 	}
 	dest.inQuickType = ReadUint8(p.Data, &p.CurOffset)
@@ -106,29 +107,27 @@ func (p *Packet) PraseQuickPacket(dest *InQuickPacket) bool {
 }
 
 func (p *Packet) PraseInQuickListPacket(dest *InQuickList) bool {
-	if p.datalen < 8 ||
+	if p.Length < 4 ||
 		dest == nil {
 		return false
 	}
-	dest.gameModID = ReadUint8(p.data, &p.CurOffset)
-	dest.IsEnableBot = ReadUint8(p.data, &p.CurOffset)
+	dest.gameModID = ReadUint8(p.Data, &p.CurOffset)
+	dest.IsEnableBot = ReadUint8(p.Data, &p.CurOffset)
 	return true
 }
 
 func (p *Packet) praseFavoritePacket(dest *InFavoritePacket) bool {
-	if p.datalen < 6 {
+	if p.Length < 2 {
 		return false
 	}
-	offset := 5
 	dest.packetType = ReadUint8(p.Data, &p.CurOffset)
 	return true
 }
 
 func (p *Packet) PraseFavoriteSetCosmeticsPacket(dest *InFavoriteSetCosmetics) bool {
-	if p.datalen < 11 {
+	if p.Length < 7 {
 		return false
 	}
-	offset := 6
 	dest.slot = ReadUint8(p.Data, &p.CurOffset)
 	dest.itemId = ReadUint32(p.Data, &p.CurOffset)
 	return true

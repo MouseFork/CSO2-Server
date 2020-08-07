@@ -2,9 +2,11 @@ package main
 
 import (
 	"fmt"
-	"math"
 	"net"
+	"os"
+	"os/signal"
 	"strconv"
+	"syscall"
 
 	. "github.com/KouKouChan/CSO2-Server/blademaster"
 	. "github.com/KouKouChan/CSO2-Server/configure"
@@ -32,7 +34,6 @@ var (
 	//SERVERVERSION 版本号
 	SERVERVERSION = "v0.3.0"
 	Redis         redis.Conn
-	Conf          CSO2Conf
 )
 
 func main() {
@@ -47,13 +48,14 @@ func main() {
 	}()
 	fmt.Println("Counter-Strike Online 2 Server", SERVERVERSION)
 	fmt.Println("Initializing process ...")
-	//获取路径
+	//获取exe路径
 	path, err := GetExePath()
 	if err != nil {
 		panic(err)
 	}
 	//读取配置
 	Conf.InitConf(path)
+	//设置verbose值
 	Level = Conf.DebugLevel
 	LogFile = Conf.LogFile
 	IsConsole = Conf.EnableConsole
@@ -107,6 +109,13 @@ func main() {
 	//开启UDP服务
 	go StartHolePunchServer(strconv.Itoa(int(Conf.HolePunchPort)), holepunchserver)
 	//开启TCP服务
+	go TCPServer(server)
+	ch := make(chan os.Signal)
+	signal.Notify(ch, syscall.SIGINT)
+	_ = <-ch
+}
+
+func TCPServer(server net.Listener) {
 	fmt.Println("Server is running at", "[AnyAdapter]:"+strconv.Itoa(int(Conf.PORT)))
 	for {
 		client, err := server.Accept()
@@ -125,49 +134,83 @@ func RecvMessage(client net.Conn) {
 	var seq uint8 = 0
 	client.Write([]byte("~SERVERCONNECTED\n"))
 	for {
-		bytes := make([]byte, math.MaxUint16)
-		n, err := client.Read(bytes) //读数据
-		if err == nil {
-			if n == 0 {
-				continue
-			}
-			var pkt packet
-			pkt.data = bytes
-			//log.Println("Prasing a packet from", client.RemoteAddr().String())
-			pkt.PrasePacket()
-			if !pkt.IsGoodPacket {
-				DebugInfo(2, "Recived a illegal packet from", client.RemoteAddr().String())
-				continue
-			}
-			switch pkt.id {
-			case TypeQuickJoin:
-				onQuick(&seq, pkt, client)
-			case TypeVersion:
-				onVersionPacket(&seq, pkt, client)
-			case TypeLogin:
-				onLoginPacket(&seq, &pkt, &client)
-			case TypeRequestChannels:
-				onServerList(&seq, &pkt, &client)
-			case TypeRequestRoomList:
-				onRoomList(&seq, &pkt, client)
-			case TypeRoom:
-				onRoomRequest(&seq, pkt, client)
-			case TypeHost:
-				onHost(&seq, pkt, client)
-			case TypeFavorite:
-				onFavorite(&seq, pkt, client)
-			case TypeOption:
-				onOption(pkt, client)
-			case TypePlayerInfo:
-				onPlayerInfo(pkt, client)
-			default:
-				DebugInfo(2, "Unknown packet", pkt.id, "from", client.RemoteAddr().String())
-			}
-		} else {
-			DebugInfo(1, "client", client.RemoteAddr().String(), "closed the connection")
-			delUserWithConn(client)
-			client.Close() //关闭con
-			return
+		//读取4字节数据包头部
+		headBytes := ReadHead(client)
+		var headPacket Header
+		headPacket.Data = headBytes
+		headPacket.PraseHeadPacket()
+		if !headPacket.IsGoodPacket {
+			DebugInfo(2, "Recived a illegal head from", client.RemoteAddr().String())
+			continue
+		}
+		//读取数据部分
+		bytes := ReadData(client, headPacket.Length)
+		dataPacket := Packet{
+			bytes,
+			headPacket.Sequence,
+			headPacket.Length,
+			bytes[0],
+			1,
+		}
+		//执行功能
+		switch dataPacket.id {
+		case TypeQuickJoin:
+			onQuick(&seq, pkt, client)
+		case TypeVersion:
+			onVersionPacket(&seq, pkt, client)
+		case TypeLogin:
+			onLoginPacket(&seq, &pkt, &client)
+		case TypeRequestChannels:
+			onServerList(&seq, &pkt, &client)
+		case TypeRequestRoomList:
+			onRoomList(&seq, &pkt, client)
+		case TypeRoom:
+			onRoomRequest(&seq, pkt, client)
+		case TypeHost:
+			onHost(&seq, pkt, client)
+		case TypeFavorite:
+			onFavorite(&seq, pkt, client)
+		case TypeOption:
+			onOption(pkt, client)
+		case TypePlayerInfo:
+			onPlayerInfo(pkt, client)
+		default:
+			DebugInfo(2, "Unknown packet", pkt.id, "from", client.RemoteAddr().String())
 		}
 	}
+end:
+	DebugInfo(1, "client", client.RemoteAddr().String(), "closed the connection")
+	delUserWithConn(client)
+	client.Close() //关闭con
+	return
+}
+
+func ReadHead(client net.Conn) []byte {
+	head, curlen := make([]byte, HeaderLen), 0
+	for {
+		n, err := client.Read(bytes[curlen:])
+		if err != nil {
+			goto end
+		}
+		curlen += n
+		if curlen >= HeaderLen {
+			break
+		}
+	}
+	return head
+}
+
+func ReadData(client net.Conn, len uint16) []byte {
+	data, curlen := make([]byte, len), 0
+	for {
+		n, err := client.Read(data[curlen:])
+		if err != nil {
+			goto end
+		}
+		curlen += n
+		if curlen >= len {
+			break
+		}
+	}
+	return data
 }

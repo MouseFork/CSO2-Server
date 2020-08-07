@@ -4,6 +4,8 @@
 
 CSOL2 服务器 v0.3.0
 
+重构中，如需编译代码，请使用 v0.2.0 版本的代码
+
 *用于韩版 Counter-Strike Online 2
 
 目前客户端请使用L-Leite的启动器。
@@ -136,4 +138,4 @@ docker run -p 30001:30001 -p 30002:30002 cso2-server
 
 4.接下来打开客户端，连接服务器
 
-*声明：Counter-Strike Online 2 归NEXON所有*
+*声明：Counter-Strike Online 2 归 NEXON 所有 ，本程序仅用于学习之用*

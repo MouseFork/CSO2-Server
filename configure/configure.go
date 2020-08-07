@@ -6,6 +6,10 @@ import (
 	. "github.com/KouKouChan/CSO2-Server/kerlong"
 )
 
+var (
+	Conf CSO2Conf
+)
+
 type CSO2Conf struct {
 	PORT             uint32
 	HolePunchPort    uint32
