@@ -1,16 +1,14 @@
 package main
 
-//Clan 战队
-type Clan struct {
-	clanID   uint32
-	clanName []byte
-	clanMark uint32
-}
+import(
+	
+	. "github.com/KouKouChan/CSO2-Server/blademaster"
+)
 
-func newClan() Clan {
+func NewClan() Clan {
 	return Clan{
 		0,
-		newNullString(),
+		NewNullString(),
 		0,
 	}
 }

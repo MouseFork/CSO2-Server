@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"math"
 	"net"
 	"strconv"
@@ -65,19 +64,19 @@ func main() {
 	//初始化TCP
 	server, err := net.Listen("tcp", fmt.Sprintf(":%d", Conf.PORT))
 	if err != nil {
-		log.Println("Init tcp socket error !\n")
+		fmt.Println("Init tcp socket error !\n")
 		panic(err)
 	}
 	defer server.Close()
 	//初始化UDP
 	udpAddr, err := net.ResolveUDPAddr("udp", fmt.Sprintf(":%d", Conf.HolePunchPort))
 	if err != nil {
-		log.Println("Init udp addr error !\n")
+		fmt.Println("Init udp addr error !\n")
 		panic(err)
 	}
 	holepunchserver, err := net.ListenUDP("udp", udpAddr)
 	if err != nil {
-		log.Println("Init udp socket error !\n")
+		fmt.Println("Init udp socket error !\n")
 		panic(err)
 	}
 	defer holepunchserver.Close()

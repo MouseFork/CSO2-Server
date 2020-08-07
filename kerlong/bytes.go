@@ -270,3 +270,52 @@ func BuildString(src []byte) []byte {
 	WriteUint8(&buf, uint8(len(src)), &offset)
 	return BytesCombine(buf, src)
 }
+
+//IsSameName 检查dest是否与src字符串像差不多
+func IsSameName(dest, src []byte) bool {
+	nextval := make([]int, len(src)+1)
+	nextval = getnextval(src, nextval)
+	i, j, ls, lt := 0, 0, len(dest), len(src)
+	for i < ls && j < lt {
+		if j == -1 || dest[i] == src[j] {
+			i++
+			j++
+		} else {
+			j = nextval[j]
+		}
+		if j == lt {
+			return true
+		}
+	}
+	return false
+}
+
+func getnext(str []byte, next []int) []int {
+	j, k := 0, -1
+	next[0] = -1
+	for j < len(str)-1 {
+		if k == -1 || str[j] == str[k] {
+			j++
+			k++
+			next[j] = k
+		} else {
+			k = next[k]
+		}
+	}
+	return next
+}
+
+func getnextval(str []byte, nextval []int) []int {
+	j, k := 0, -1
+	nextval[0] = -1
+	for j < len(str)-1 {
+		if k == -1 || str[j] == str[k] {
+			j++
+			k++
+			nextval[j] = nextval[k]
+		} else {
+			k = nextval[k]
+		}
+	}
+	return nextval
+}

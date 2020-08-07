@@ -9,7 +9,7 @@ var Loger *log.Logger
 
 func InitLoger(path string) {
 	file := path + "\\CSO2-Server.log"
-	logFile, err := os.OpenFile(file, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0766)
+	logFile, err := os.OpenFile(file, os.O_RDWR|os.O_CREATE, 0766)
 	if err != nil {
 		panic(err)
 	}

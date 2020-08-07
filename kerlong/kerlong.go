@@ -16,3 +16,12 @@ func Ternary(b bool, t, f interface{}) interface{} {
 	}
 	return f
 }
+
+func IsAllNumber(str string) bool {
+	for i := 0; i < len(str); i++ {
+		if str[i] > '9' || str[i] < '0' {
+			return false
+		}
+	}
+	return true
+}
