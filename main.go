@@ -20,11 +20,11 @@ import (
 	. "github.com/KouKouChan/CSO2-Server/server/host"
 	. "github.com/KouKouChan/CSO2-Server/server/inventory"
 	. "github.com/KouKouChan/CSO2-Server/server/message"
-	. "github.com/KouKouChan/CSO2-Server/server/packet"
 	. "github.com/KouKouChan/CSO2-Server/server/playerInfo"
 	. "github.com/KouKouChan/CSO2-Server/server/quick"
 	. "github.com/KouKouChan/CSO2-Server/server/room"
 	. "github.com/KouKouChan/CSO2-Server/server/user"
+	. "github.com/KouKouChan/CSO2-Server/server/version"
 	. "github.com/KouKouChan/CSO2-Server/verbose"
 	"github.com/garyburd/redigo/redis"
 	_ "github.com/mattn/go-sqlite3"
@@ -157,7 +157,7 @@ func RecvMessage(client net.Conn) {
 		case TypeQuickJoin:
 			onQuick(&seq, pkt, client)
 		case TypeVersion:
-			onVersionPacket(&seq, pkt, client)
+			OnVersionPacket(&seq, client)
 		case TypeLogin:
 			onLoginPacket(&seq, &pkt, &client)
 		case TypeRequestChannels:
