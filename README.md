@@ -1,8 +1,6 @@
 ## Counter-Strike Online 2 Server 
 
-<img src="./photos/exam.jpeg" alt="Image" style="zoom:25%;" />
-
-9月后继续更新。。。
+[English](./README.en.md)
 
 ### 一、介绍
 
