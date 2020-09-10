@@ -154,6 +154,12 @@ type (
 		Unk45              uint8
 		RespawnTime        uint8
 	}
+
+	InRoomCountdownPacket struct {
+		CountdownType uint8
+		Count         uint8
+	}
+
 	//未知，用于请求频道
 	OutLobbyJoinRoom struct {
 		Unk00 uint8
@@ -462,6 +468,26 @@ func (p *PacketData) PraseUpdateRoomPacket(dest *InUpSettingReq) bool {
 		dest.RespawnTime = ReadUint8(p.Data, &p.CurOffset)
 	}
 	return true
+}
+
+func (p *PacketData) PraseRoomCountdownPacket(dest *InRoomCountdownPacket) bool {
+	//id + count + CountdownType + count = 4 bytes
+	if p.Length < 3 ||
+		dest == nil {
+		return false
+	}
+	dest.CountdownType = ReadUint8(p.Data, &p.CurOffset)
+	if dest.CountdownType == InProgress {
+		if p.Length < 4 {
+			return false
+		}
+		dest.Count = ReadUint8(p.Data, &p.CurOffset)
+	}
+	return true
+}
+
+func (p InRoomCountdownPacket) ShouldCountdown() bool {
+	return p.CountdownType == InProgress
 }
 
 //GetNextSeq 获取下一次的seq数据包序号

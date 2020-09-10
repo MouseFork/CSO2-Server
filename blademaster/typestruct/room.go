@@ -174,6 +174,10 @@ const (
 	OUTCountdown      = 14
 
 	DefaultCountdownNum = 7
+
+	//Start CountDown
+	InProgress = 0
+	Stop       = 1
 )
 
 func (rm Room) IsGlobalCountdownInProgress() bool {
@@ -186,6 +190,8 @@ func (rm Room) RoomGetUser(id uint32) *User {
 		rm.NumPlayers <= 0 {
 		return nil
 	}
+	rm.RoomMutex.Lock()
+	defer rm.RoomMutex.Unlock()
 	if v, ok := rm.Users[id]; ok {
 		return v
 	}
@@ -196,6 +202,8 @@ func (rm *Room) StopCountdown() {
 	if rm == nil {
 		return
 	}
+	rm.RoomMutex.Lock()
+	defer rm.RoomMutex.Unlock()
 	rm.Countdown = DefaultCountdownNum
 	rm.CountingDown = false
 }
@@ -204,6 +212,8 @@ func (rm *Room) SetStatus(status uint8) {
 	if rm == nil {
 		return
 	}
+	rm.RoomMutex.Lock()
+	defer rm.RoomMutex.Unlock()
 	if status == 1 ||
 		status == 2 {
 		rm.Setting.Status = status
@@ -212,6 +222,8 @@ func (rm *Room) SetStatus(status uint8) {
 }
 
 func (rm Room) CanStartGame() bool {
+	rm.RoomMutex.Lock()
+	defer rm.RoomMutex.Unlock()
 	switch rm.Setting.GameModeID {
 	case ModeDeathmatch, ModeOriginal, ModeOriginalmr, ModeCasualbomb,
 		ModeCasualoriginal, ModeEventmod01, ModeEventmod02, ModeDiy,
@@ -233,6 +245,11 @@ func (rm Room) CanStartGame() bool {
 }
 
 func (rm *Room) ProgressCountdown(num uint8) {
+	if rm == nil {
+		return
+	}
+	rm.RoomMutex.Lock()
+	defer rm.RoomMutex.Unlock()
 	if rm.Countdown > DefaultCountdownNum ||
 		rm.Countdown < 0 {
 		rm.Countdown = 0
@@ -248,6 +265,11 @@ func (rm *Room) ProgressCountdown(num uint8) {
 }
 
 func (rm *Room) GetCountdown() uint8 {
+	if rm == nil {
+		return 0
+	}
+	rm.RoomMutex.Lock()
+	defer rm.RoomMutex.Unlock()
 	if rm.CountingDown == false {
 		DebugInfo(2, "Error : tried to get countdown without counting down")
 		return 0
@@ -261,6 +283,8 @@ func (rm *Room) GetCountdown() uint8 {
 
 func (rm Room) GetAllCtNum() int {
 	num := 0
+	rm.RoomMutex.Lock()
+	defer rm.RoomMutex.Unlock()
 	for _, v := range rm.Users {
 		if v != nil && v.GetUserTeam() == UserForceCounterTerrorist {
 			num++
@@ -271,6 +295,8 @@ func (rm Room) GetAllCtNum() int {
 
 func (rm Room) GetAllTrNum() int {
 	num := 0
+	rm.RoomMutex.Lock()
+	defer rm.RoomMutex.Unlock()
 	for _, v := range rm.Users {
 		if v != nil && v.GetUserTeam() == UserForceTerrorist {
 			num++
@@ -289,11 +315,15 @@ func (rm *Room) JoinUser(u *User) bool {
 		DebugInfo(2, "Error : Cant add User", string(u.Username), "to room", string(rm.Setting.RoomName))
 		return false
 	}
+	rm.RoomMutex.Lock()
 	rm.NumPlayers++
+	rm.RoomMutex.Unlock()
 	u.CurrentTeam = uint8(destTeam)
 	u.SetUserStatus(UserNotReady)
 	u.SetUserRoom(rm.Id)
 	u.SetUserIngame(false)
+	rm.RoomMutex.Lock()
+	defer rm.RoomMutex.Unlock()
 	if _, ok := rm.Users[u.Userid]; !ok {
 		rm.Users[u.Userid] = u
 		return true
@@ -304,6 +334,7 @@ func (rm *Room) JoinUser(u *User) bool {
 func (rm Room) FindDesirableTeam() int {
 	trNum := 0
 	ctNum := 0
+	rm.RoomMutex.Lock()
 	for _, v := range rm.Users {
 		if v.GetUserTeam() == UserForceTerrorist {
 			trNum++
@@ -314,6 +345,7 @@ func (rm Room) FindDesirableTeam() int {
 			return 0
 		}
 	}
+	rm.RoomMutex.Unlock()
 	if rm.Setting.AreBotsEnabled != 0 {
 		u := rm.RoomGetUser(rm.HostUserID)
 		if u == nil ||

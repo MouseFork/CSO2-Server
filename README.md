@@ -16,16 +16,6 @@ CSOL2 服务器 v0.3.0
 
 如果大家有什么建议或问题，欢迎提出。
 
-![Image](./photos/main.png)
-
-![Image](./photos/intro.png)
-
-![Image](./photos/channel.png)
-
-![Image](./photos/ingame.jpg)
-
-![Image](./photos/result.jpg)
-
 ### 二、项目计划
 
     1.先实现基本的游戏游玩功能和联机功能 √
@@ -141,3 +131,15 @@ docker run -p 30001:30001 -p 30002:30002 cso2-server
 4.接下来打开客户端，连接服务器
 
 *声明：Counter-Strike Online 2 归 NEXON 所有 ，本程序仅用于学习之用*
+
+### 十三、图片
+
+![Image](./photos/main.png)
+
+![Image](./photos/intro.png)
+
+![Image](./photos/channel.png)
+
+![Image](./photos/ingame.jpg)
+
+![Image](./photos/result.jpg)

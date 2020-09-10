@@ -37,7 +37,7 @@ func OnRoomRequest(p *PacketData, client net.Conn) {
 			//onChangeTeam(seq, p, client)
 		case GameStartCountdownRequest:
 			//log.Println("Recived a begin start game request from", client.RemoteAddr().String())
-			//onGameStartCountdown(p, client)
+			//OnGameStartCountdown(p, client)
 		default:
 			DebugInfo(2, "Unknown room packet", pkt.InRoomType, "from", client.RemoteAddr().String())
 		}
