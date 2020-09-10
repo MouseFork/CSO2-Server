@@ -4,6 +4,7 @@ import (
 	"net"
 
 	. "github.com/KouKouChan/CSO2-Server/blademaster/core/inventory"
+	. "github.com/KouKouChan/CSO2-Server/blademaster/core/message"
 	. "github.com/KouKouChan/CSO2-Server/blademaster/typestruct"
 	. "github.com/KouKouChan/CSO2-Server/configure"
 	. "github.com/KouKouChan/CSO2-Server/kerlong"
@@ -18,11 +19,25 @@ func OnLogin(seq *uint8, dataPacket *PacketData, client net.Conn) {
 		return
 	}
 
-	u := GetUserByLogin(pkt.NexonUsername, pkt.PassWd)
-	if u == nil || u.Userid <= 0 {
-		DebugInfo(2, "Error : User", string(pkt.NexonUsername), "from", client.RemoteAddr().String(), "login failed !")
-		client.Close()
+	u, result := GetUserByLogin(pkt.NexonUsername, pkt.PassWd)
+	switch result {
+	case USER_PASSWD_ERROR:
+		DebugInfo(2, "Error : User", string(pkt.NexonUsername), "from", client.RemoteAddr().String(), "login failed with error password !")
+		OnSendMessage(seq, client, DialogBox, GAME_LOGIN_BAD_PASSWORD)
 		return
+	case USER_ALREADY_LOGIN:
+		DebugInfo(2, "Error : User", string(pkt.NexonUsername), "from", client.RemoteAddr().String(), "already logged in !")
+		OnSendMessage(seq, client, DialogBox, GAME_LOGIN_ALREADY)
+		return
+	case USER_NOT_FOUND:
+		DebugInfo(2, "Error : User", string(pkt.NexonUsername), "from", client.RemoteAddr().String(), "not registered !")
+		OnSendMessage(seq, client, DialogBox, GAME_LOGIN_BAD_USERNAME)
+		return
+	case USER_UNKOWN_ERROR:
+		DebugInfo(2, "Error : User", string(pkt.NexonUsername), "from", client.RemoteAddr().String(), "login but suffered a error !")
+		OnSendMessage(seq, client, DialogBox, GAME_LOGIN_ERROR)
+		return
+	default:
 	}
 
 	u.CurrentConnection = client

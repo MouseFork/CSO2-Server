@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"syscall"
 
+	. "github.com/KouKouChan/CSO2-Server/blademaster/core/holepunch"
 	. "github.com/KouKouChan/CSO2-Server/blademaster/core/message"
 	. "github.com/KouKouChan/CSO2-Server/blademaster/core/quick"
 	. "github.com/KouKouChan/CSO2-Server/blademaster/core/room"
@@ -18,6 +19,7 @@ import (
 	. "github.com/KouKouChan/CSO2-Server/database/redis"
 	. "github.com/KouKouChan/CSO2-Server/database/sqlite"
 	. "github.com/KouKouChan/CSO2-Server/kerlong"
+	. "github.com/KouKouChan/CSO2-Server/register"
 	. "github.com/KouKouChan/CSO2-Server/servermanager"
 	. "github.com/KouKouChan/CSO2-Server/verbose"
 	"github.com/garyburd/redigo/redis"
@@ -121,6 +123,8 @@ func main() {
 			fmt.Println("Database connected !")
 			defer DB.Close()
 		}
+	} else {
+		DB = nil
 	}
 
 	//Init Redis
@@ -139,10 +143,15 @@ func main() {
 	MainServer = NewMainServer()
 
 	//Start UDP Server
-	//go StartHolePunchServer(strconv.Itoa(int(Conf.HolePunchPort)), holepunchserver)
+	go StartHolePunchServer(strconv.Itoa(int(Conf.HolePunchPort)), holepunchserver)
 
 	//Start TCP Server
 	go TCPServer(server)
+
+	//Start Register Server
+	if Conf.EnableRegister != 0 {
+		go OnRegister()
+	}
 	ch := make(chan os.Signal)
 	signal.Notify(ch, syscall.SIGINT)
 	_ = <-ch

@@ -10,9 +10,8 @@ import (
 //房间信息
 type (
 	Room struct {
-		Id                 uint16
-		Lastflags          uint64
-		Flags              uint64
+		Id uint16
+		//Flags              uint64
 		RoomNumber         uint8
 		PasswordProtected  uint8
 		Unk08              uint8

@@ -79,7 +79,7 @@ func BuildRoomList(seq *uint8, p PacketData, chl ChannelInfo) []byte {
 		roombuf := make([]byte, 512)
 		offset := 0
 		WriteUint16(&roombuf, chl.Rooms[i].Id, &offset)
-		WriteUint64(&roombuf, chl.Rooms[i].Flags, &offset)
+		WriteUint64(&roombuf, 0XFFFFFFFFFFFFFFFF, &offset)
 		WriteString(&roombuf, chl.Rooms[i].Setting.RoomName, &offset)
 		WriteUint8(&roombuf, chl.Rooms[i].RoomNumber, &offset)
 		WriteUint8(&roombuf, chl.Rooms[i].PasswordProtected, &offset)

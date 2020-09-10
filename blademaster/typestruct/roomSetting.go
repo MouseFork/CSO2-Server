@@ -208,5 +208,4 @@ func (dest *Room) ToUpdateSetting(src *InUpSettingReq) {
 	if highFlag&0x10 != 0 {
 		dest.Setting.RespawnTime = src.RespawnTime
 	}
-	dest.Lastflags = src.Flags
 }

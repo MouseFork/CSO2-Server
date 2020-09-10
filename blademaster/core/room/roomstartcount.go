@@ -9,7 +9,7 @@ import (
 	. "github.com/KouKouChan/CSO2-Server/verbose"
 )
 
-func OnGameStartCountdown(p PacketData, client net.Conn) {
+func OnGameStartCountdown(p *PacketData, client net.Conn) {
 	//检索数据包
 	var pkt InRoomCountdownPacket
 	if !p.PraseRoomCountdownPacket(&pkt) {

@@ -8,6 +8,14 @@ import (
 	. "github.com/KouKouChan/CSO2-Server/verbose"
 )
 
+const (
+	USER_LOGIN_SUCCESS = 0
+	USER_ALREADY_LOGIN = 1
+	USER_NOT_FOUND     = 2
+	USER_PASSWD_ERROR  = 3
+	USER_UNKOWN_ERROR  = 4
+)
+
 func DelUserWithConn(con net.Conn) bool {
 	if UsersManager.UserNum == 0 {
 		DebugInfo(2, "UsersManager Error : There is no online user !")
@@ -60,11 +68,11 @@ func GetNewUserID() uint32 {
 }
 
 //getUserByLogin 假定nexonUsername是唯一
-func GetUserByLogin(account, passwd []byte) *User {
+func GetUserByLogin(account, passwd []byte) (*User, int) {
 	//查看是否有已经登陆的同名用户
 	for _, v := range UsersManager.Users {
 		if string(v.NexonUsername) == string(account) {
-			return nil
+			return nil, USER_ALREADY_LOGIN
 		}
 	}
 	//查看数据库是否有该用户

@@ -24,7 +24,7 @@ var (
 )
 
 const (
-	//MAXUSERNUM , 8096 is enough , there is no more people play csol2
+	//MAXUSERNUM , 8096 is enough
 	MAXUSERNUM = 8096
 )
 

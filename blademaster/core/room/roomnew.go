@@ -65,7 +65,7 @@ func OnNewRoom(p *PacketData, client net.Conn) {
 	SendPacket(rst, uPtr.CurrentConnection)
 	DebugInfo(2, "Sent a new room packet to", string(uPtr.Username))
 	//生成房间设置数据包
-	rst = BytesCombine(BuildHeader(uPtr.CurrentSequence, p.Id), BuildRoomSetting(&rm))
+	rst = BytesCombine(BuildHeader(uPtr.CurrentSequence, p.Id), BuildRoomSetting(&rm, 0XFFFFFFFFFFFFFFFF))
 	SendPacket(rst, uPtr.CurrentConnection)
 	DebugInfo(2, "Sent a room setting packet to", string(uPtr.Username))
 }
@@ -169,8 +169,6 @@ func CreateRoom(pkt InNewRoomPacket, u *User) Room {
 	}
 	rm.Id = id
 	rm.RoomNumber = uint8(rm.Id)
-	rm.Flags = 0xFFFFFFFFFFFFFFFF
-	rm.Lastflags = 0xFFFFFFFFFFFFFFFF
 	rm.HostUserID = 0
 	rm.Users = map[uint32]*User{}
 	rm.ParentChannel = chl.ChannelID

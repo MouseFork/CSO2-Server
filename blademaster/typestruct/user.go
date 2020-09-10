@@ -9,7 +9,7 @@ type (
 	User struct {
 		//个人信息
 		Userid               uint32
-		NexonUsername        []byte
+		NexonUsername        []byte //暂时两个name使用一个值
 		Username             []byte
 		Password             []byte
 		Level                uint16
@@ -48,6 +48,7 @@ type (
 		SkillZombieCurXp     uint64
 		SkillZombieMaxXp     uint64
 		SkillZombiePoints    uint8
+		UserMail             []byte
 		//连接
 		CurrentConnection net.Conn
 		//频道房间信息
@@ -397,22 +398,23 @@ func GetNewUser() User {
 			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00,
 			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3E, 0x00, 0x00}, // unlockedAvatars
-		0,      //viplevel
-		0,      //vipXp
-		0x02FB, //skillHumanCurXp
-		0x19AC, //skillHumanMaxXp
-		0,      //skillHumanPoints
-		0,      //skillZombieCurXp
-		0x16F6, //skillZombieMaxXp
-		0,      //skillZombiePoints
-		nil,    //connection
-		1,      //serverid
-		0,      //channelid
-		0,      //roomid
-		0,      //currentTeam
-		0,      //currentstatus
-		false,  //currentIsIngame
-		nil,    //sequence
+		0,        //viplevel
+		0,        //vipXp
+		0x02FB,   //skillHumanCurXp
+		0x19AC,   //skillHumanMaxXp
+		0,        //skillHumanPoints
+		0,        //skillZombieCurXp
+		0x16F6,   //skillZombieMaxXp
+		0,        //skillZombiePoints
+		[]byte{}, //mail
+		nil,      //connection
+		1,        //serverid
+		0,        //channelid
+		0,        //roomid
+		0,        //currentTeam
+		0,        //currentstatus
+		false,    //currentIsIngame
+		nil,      //sequence
 		0,
 		0,
 		0,

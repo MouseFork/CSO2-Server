@@ -48,6 +48,7 @@ func OnLeaveRoom(p *PacketData, client net.Conn) {
 	p.Length = 3
 	p.Data[1] = uPtr.GetUserChannelServerID()
 	p.Data[2] = uPtr.GetUserChannelID()
+	p.CurOffset = 1
 	uPtr.QuitRoom()
 	//房间状态
 	rm.CheckIngameStatus()

@@ -50,12 +50,11 @@ func OnUpdateRoom(p *PacketData, client net.Conn) {
 	//更新房间设置
 	curroom.ToUpdateSetting(&pkt)
 	//向房间所有玩家发送更新报文
-	settingpkt := BuildRoomSetting(curroom)
+	settingpkt := BuildRoomSetting(curroom, pkt.Flags)
 	for _, v := range curroom.Users {
 		rst := BytesCombine(BuildHeader(v.CurrentSequence, PacketTypeRoom), settingpkt)
 		SendPacket(rst, v.CurrentConnection)
 		//log.Println("["+strconv.Itoa(k+1)+"/"+strconv.Itoa(int((*curroom).numPlayers))+"] Updated room for", v.currentConnection.RemoteAddr().String(), "!")
 	}
-	curroom.Lastflags = curroom.Flags
 	DebugInfo(2, "Host", string(uPtr.Username), "updated room", string(curroom.Setting.RoomName), "id", curroom.Id)
 }

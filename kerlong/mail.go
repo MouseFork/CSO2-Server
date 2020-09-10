@@ -14,7 +14,7 @@ type EmailData struct {
 	Content       string
 }
 
-func SendEmailTO(mail EmailData) error {
+func SendEmailTO(mail *EmailData) error {
 	m := gomail.NewMessage()
 	m.SetAddressHeader("From", mail.SenderMail, mail.MailSubHeader) // 发件人
 	m.SetHeader("To",                                               // 收件人

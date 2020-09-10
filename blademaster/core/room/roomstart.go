@@ -10,7 +10,7 @@ import (
 	. "github.com/KouKouChan/CSO2-Server/verbose"
 )
 
-func onGameStart(p PacketData, client net.Conn) {
+func OnGameStart(p *PacketData, client net.Conn) {
 	//找到对应用户
 	uPtr := GetUserFromConnection(client)
 	if uPtr == nil ||
@@ -28,7 +28,7 @@ func onGameStart(p PacketData, client net.Conn) {
 		return
 	}
 	//房主开始游戏,设置房间状态
-	setting := BuildRoomSetting(rm)
+	setting := BuildRoomSetting(rm, 0XFFFFFFFFFFFFFFFF)
 	if rm.HostUserID == uPtr.Userid {
 		rm.StopCountdown()
 		rm.SetStatus(StatusIngame)

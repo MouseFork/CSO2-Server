@@ -25,10 +25,10 @@ func OnRoomRequest(p *PacketData, client net.Conn) {
 			//onToggleReady(seq, p, client)
 		case GameStartRequest:
 			//log.Println("Recived a start game request from", client.RemoteAddr().String())
-			//onGameStart(seq, p, client)
+			OnGameStart(p, client)
 		case UpdateSettings:
 			//log.Println("Recived a update room setting request from", client.RemoteAddr().String())
-			//onUpdateRoom(seq, p, client)
+			OnUpdateRoom(p, client)
 		case OnCloseResultWindow:
 			//log.Println("Recived a close resultWindow request from", client.RemoteAddr().String())
 			//onCloseResultRequest(seq, p, client)
@@ -37,7 +37,7 @@ func OnRoomRequest(p *PacketData, client net.Conn) {
 			//onChangeTeam(seq, p, client)
 		case GameStartCountdownRequest:
 			//log.Println("Recived a begin start game request from", client.RemoteAddr().String())
-			//OnGameStartCountdown(p, client)
+			OnGameStartCountdown(p, client)
 		default:
 			DebugInfo(2, "Unknown room packet", pkt.InRoomType, "from", client.RemoteAddr().String())
 		}

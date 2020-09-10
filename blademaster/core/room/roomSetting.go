@@ -8,18 +8,12 @@ import (
 )
 
 //创建房间设置数据包
-func BuildRoomSetting(room *Room) []byte {
+func BuildRoomSetting(room *Room, flags uint64) []byte {
 	buf := make([]byte, 128+room.Setting.LenOfName+ //实际计算是最大63字节+长度
 		room.Setting.LenOfPassWd+
 		room.Setting.LenOfMultiMaps)
 	offset := 0
 	WriteUint8(&buf, OUTUpdateSettings, &offset)
-	var flags uint64
-	if room.Flags != room.Lastflags {
-		flags = room.Lastflags
-	} else {
-		flags = room.Flags
-	}
 	WriteUint64(&buf, flags, &offset)
 	lowFlag := *(*uint32)(unsafe.Pointer(&flags))
 	flags = flags >> 32
