@@ -7,8 +7,8 @@ import (
 
 var Loger *log.Logger
 
-func InitLoger(path string) {
-	file := path + "\\CSO2-Server.log"
+func InitLoger(path, name string) {
+	file := path + "\\" + name
 	logFile, err := os.OpenFile(file, os.O_RDWR|os.O_CREATE, 0766)
 	if err != nil {
 		panic(err)
