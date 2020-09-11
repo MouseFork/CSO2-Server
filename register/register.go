@@ -67,12 +67,13 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		DebugInfo(2, err)
 		return
 	}
-	if strings.Join(r.Form["on_click"], ", ") == "sendmail" {
+	if strings.Join(r.Form["on_click"], ", ") == "sendmail" &&
+		Conf.EnableMail != 0 {
 		addrtmp := strings.Join(r.Form["emailaddr"], ", ")
 		wth := WebToHtml{Addr: addrtmp}
 		if addrtmp == "" {
 			wth.Tip = "提示：邮箱不能为空！"
-		} else if IsExistsMail(addrtmp) {
+		} else if IsExistsMail([]byte(addrtmp)) {
 			wth.Tip = "提示：该邮箱已注册过！"
 		} else {
 			Vcode := getrand()
@@ -93,7 +94,8 @@ func Register(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		t.Execute(w, wth)
-	} else if strings.Join(r.Form["on_click"], ", ") == "register" {
+	} else if strings.Join(r.Form["on_click"], ", ") == "register" &&
+		Conf.EnableMail != 0 {
 		addrtmp := strings.Join(r.Form["emailaddr"], ", ")
 		usernametmp := strings.Join(r.Form["username"], ", ")
 		passwordtmp := strings.Join(r.Form["password"], ", ")
@@ -115,11 +117,11 @@ func Register(w http.ResponseWriter, r *http.Request) {
 			wth.Tip = "提示：验证码不能为空！"
 			t.Execute(w, wth)
 			return
-		} else if IsExistsMail(addrtmp) {
+		} else if IsExistsMail([]byte(addrtmp)) {
 			wth.Tip = "提示：该邮箱已注册过！"
 			t.Execute(w, wth)
 			return
-		} else if IsExistsUser(usernametmp) {
+		} else if IsExistsUser([]byte(usernametmp)) {
 			wth.Tip = "提示：用户名已存在！"
 			wth.UserName = ""
 			t.Execute(w, wth)
@@ -130,7 +132,6 @@ func Register(w http.ResponseWriter, r *http.Request) {
 			u.Password = []byte(fmt.Sprintf("%x", md5.Sum([]byte(usernametmp+passwordtmp))))
 			u.UserMail = []byte(addrtmp)
 			if tf := AddUserToDB(&u); tf != nil {
-				//RollBackUserID()
 				wth.Tip = "提示：数据库错误,注册失败！"
 				t.Execute(w, wth)
 				return
@@ -141,10 +142,40 @@ func Register(w http.ResponseWriter, r *http.Request) {
 			wth.Tip = "提示：验证码不正确！"
 			t.Execute(w, wth)
 		}
+	} else if strings.Join(r.Form["on_click"], ", ") == "register" &&
+		Conf.EnableMail == 0 {
+		usernametmp := strings.Join(r.Form["username"], ", ")
+		passwordtmp := strings.Join(r.Form["password"], ", ")
+		wth := WebToHtml{UserName: usernametmp, Password: passwordtmp}
+		if usernametmp == "" {
+			wth.Tip = "提示：用户名不能为空！"
+			t.Execute(w, wth)
+			return
+		} else if passwordtmp == "" {
+			wth.Tip = "提示：密码不能为空！"
+			t.Execute(w, wth)
+			return
+		} else if IsExistsUser([]byte(usernametmp)) {
+			wth.Tip = "提示：用户名已存在！"
+			wth.UserName = ""
+			t.Execute(w, wth)
+			return
+		} else {
+			u := GetNewUser()
+			u.SetUserName([]byte(usernametmp), []byte(usernametmp))
+			u.Password = []byte(fmt.Sprintf("%x", md5.Sum([]byte(usernametmp+passwordtmp))))
+			u.UserMail = []byte("Unkown")
+			if tf := AddUserToDB(&u); tf != nil {
+				wth.Tip = "提示：数据库错误,注册失败！"
+				t.Execute(w, wth)
+				return
+			}
+			wth.Tip = "注册成功!"
+			t.Execute(w, wth)
+		}
 	} else {
 		t.Execute(w, nil)
 	}
-
 }
 
 func OnJpg(w http.ResponseWriter, r *http.Request) {

@@ -231,7 +231,7 @@ func UpdateUserToDB(u *User) error {
 	return nil
 }
 
-func IsExistsMail(mail string) bool {
+func IsExistsMail(mail []byte) bool {
 	if DB != nil {
 		query, err := DB.Prepare("SELECT * FROM userinfo WHERE UserMail = ?")
 		if err == nil {
@@ -253,7 +253,7 @@ func IsExistsMail(mail string) bool {
 	return false
 }
 
-func IsExistsUser(username string) bool {
+func IsExistsUser(username []byte) bool {
 	if DB != nil {
 		query, err := DB.Prepare("SELECT * FROM userinfo WHERE LoginName = ?")
 		if err == nil {

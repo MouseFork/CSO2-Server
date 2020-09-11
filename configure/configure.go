@@ -26,6 +26,7 @@ type CSO2Conf struct {
 	LogFile          uint32
 	EnableConsole    uint32
 	EnableRegister   uint32
+	EnableMail       uint32
 	REGPort          uint32
 	REGEmail         string
 	REGPassWord      string
@@ -55,7 +56,8 @@ func (conf *CSO2Conf) InitConf(path string) {
 		conf.DebugLevel = 2
 		conf.LogFile = 1
 		conf.EnableConsole = 0
-		conf.EnableRegister = 0
+		conf.EnableRegister = 1
+		conf.EnableMail = 0
 		return
 	}
 	conf.EnableRedis = ini_parser.IniGetUint32("Database", "EnableRedis")
@@ -79,6 +81,7 @@ func (conf *CSO2Conf) InitConf(path string) {
 	conf.LogFile = ini_parser.IniGetUint32("Debug", "LogFile")
 	conf.EnableConsole = ini_parser.IniGetUint32("Debug", "EnableConsole")
 	conf.EnableRegister = ini_parser.IniGetUint32("Register", "EnableRegister")
+	conf.EnableMail = ini_parser.IniGetUint32("Register", "EnableEmail")
 	conf.REGPort = ini_parser.IniGetUint32("Register", "REGPort")
 	conf.REGEmail = ini_parser.IniGetString("Register", "REGEmail")
 	conf.REGPassWord = ini_parser.IniGetString("Register", "REGPassWord")
