@@ -16,13 +16,13 @@ func OnRoomRequest(p *PacketData, client net.Conn) {
 			OnNewRoom(p, client)
 		case JoinRoomRequest:
 			//log.Println("Recived a join room request from", client.RemoteAddr().String())
-			//onJoinRoom(seq, p, client)
+			OnJoinRoom(p, client)
 		case LeaveRoomRequest:
 			//log.Println("Recived a leave room request from", client.RemoteAddr().String())
 			OnLeaveRoom(p, client)
 		case ToggleReadyRequest:
 			//log.Println("Recived a ready request from", client.RemoteAddr().String())
-			//onToggleReady(seq, p, client)
+			OnToggleReady(p, client)
 		case GameStartRequest:
 			//log.Println("Recived a start game request from", client.RemoteAddr().String())
 			OnGameStart(p, client)
@@ -31,10 +31,10 @@ func OnRoomRequest(p *PacketData, client net.Conn) {
 			OnUpdateRoom(p, client)
 		case OnCloseResultWindow:
 			//log.Println("Recived a close resultWindow request from", client.RemoteAddr().String())
-			//onCloseResultRequest(seq, p, client)
+			OnCloseResultRequest(p, client)
 		case SetUserTeamRequest:
 			//log.Println("Recived a set user team request from", client.RemoteAddr().String())
-			//onChangeTeam(seq, p, client)
+			OnChangeTeam(p, client)
 		case GameStartCountdownRequest:
 			//log.Println("Recived a begin start game request from", client.RemoteAddr().String())
 			OnGameStartCountdown(p, client)

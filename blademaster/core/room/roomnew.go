@@ -48,9 +48,7 @@ func OnNewRoom(p *PacketData, client net.Conn) {
 	// 	return
 	// }
 
-	uPtr.SetUserRoom(rm.Id)
-	uPtr.CurrentTeam = UserForceCounterTerrorist
-	uPtr.SetUserStatus(UserNotReady)
+	uPtr.JoinRoom(rm.Id, UserForceCounterTerrorist)
 
 	//把房间加进服务器
 	if !AddChannelRoom(&rm,

@@ -160,6 +160,15 @@ type (
 		Count         uint8
 	}
 
+	InJoinRoomPacket struct {
+		RoomId        uint16
+		LenOfPassWord uint8
+		PassWord      []byte
+	}
+
+	InChangeTeamPacket struct {
+		NewTeam uint8
+	}
 	//未知，用于请求频道
 	OutLobbyJoinRoom struct {
 		Unk00 uint8
@@ -483,6 +492,26 @@ func (p *PacketData) PraseRoomCountdownPacket(dest *InRoomCountdownPacket) bool 
 		}
 		dest.Count = ReadUint8(p.Data, &p.CurOffset)
 	}
+	return true
+}
+
+func (p *PacketData) PraseJoinRoomPacket(dest *InJoinRoomPacket) bool {
+	//id + join + roomId + lenOfPassWord = 5 bytes
+	if p.Length < 5 {
+		return false
+	}
+	dest.RoomId = ReadUint16(p.Data, &p.CurOffset)
+	dest.LenOfPassWord = ReadUint8(p.Data, &p.CurOffset)
+	dest.PassWord = ReadString(p.Data, &p.CurOffset, int(dest.LenOfPassWord))
+	return true
+}
+
+func (p *PacketData) PraseChangeTeamPacket(dest *InChangeTeamPacket) bool {
+	//id + change + destteam = 3 bytes
+	if p.Length < 3 {
+		return false
+	}
+	dest.NewTeam = ReadUint8(p.Data, &p.CurOffset)
 	return true
 }
 

@@ -168,6 +168,27 @@ func (u *User) QuitRoom() {
 	u.CurrentIsIngame = false
 }
 
+func (u *User) JoinRoom(id uint16, team uint8) {
+	if u == nil {
+		return
+	}
+	u.UserMutex.Lock()
+	defer u.UserMutex.Unlock()
+	u.CurrentRoomId = id
+	u.CurrentTeam = team
+	u.Currentstatus = UserNotReady
+	u.CurrentIsIngame = false
+}
+
+func (u *User) SetUserTeam(team uint8) {
+	if u == nil {
+		return
+	}
+	u.UserMutex.Lock()
+	defer u.UserMutex.Unlock()
+	u.CurrentTeam = team
+}
+
 func (u *User) SetUserStatus(status uint8) {
 	if u == nil {
 		return

@@ -317,22 +317,22 @@ func (rm *Room) JoinUser(u *User) bool {
 	rm.RoomMutex.Lock()
 	rm.NumPlayers++
 	rm.RoomMutex.Unlock()
-	u.CurrentTeam = uint8(destTeam)
-	u.SetUserStatus(UserNotReady)
-	u.SetUserRoom(rm.Id)
-	u.SetUserIngame(false)
+	u.JoinRoom(rm.Id, uint8(destTeam))
 	rm.RoomMutex.Lock()
 	defer rm.RoomMutex.Unlock()
 	if _, ok := rm.Users[u.Userid]; !ok {
 		rm.Users[u.Userid] = u
 		return true
 	}
+	u.QuitRoom()
 	return false
 }
 
 func (rm Room) FindDesirableTeam() int {
 	trNum := 0
 	ctNum := 0
+
+	//获取两个阵营真实玩家数
 	rm.RoomMutex.Lock()
 	for _, v := range rm.Users {
 		if v.GetUserTeam() == UserForceTerrorist {
@@ -345,21 +345,22 @@ func (rm Room) FindDesirableTeam() int {
 		}
 	}
 	rm.RoomMutex.Unlock()
+
 	if rm.Setting.AreBotsEnabled != 0 {
+		//检查房主
 		u := rm.RoomGetUser(rm.HostUserID)
 		if u == nil ||
 			u.Userid <= 0 {
 			return 0
 		}
-		botsInHostTeam := 0
+
+		//计算两个阵营bot数，bot认为是一个空余位置，把bot位转给用户
 		if u.GetUserTeam() == UserForceCounterTerrorist {
-			botsInHostTeam = int(rm.Setting.NumCtBots)
-			if botsInHostTeam > 0 {
+			if rm.Setting.NumCtBots > 0 {
 				return UserForceCounterTerrorist
 			}
 		} else if u.GetUserTeam() == UserForceTerrorist {
-			botsInHostTeam = int(rm.Setting.NumTrBots)
-			if botsInHostTeam > 0 {
+			if rm.Setting.NumTrBots > 0 {
 				return UserForceTerrorist
 			}
 		} else {
