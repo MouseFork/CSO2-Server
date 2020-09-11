@@ -111,7 +111,7 @@ func BuildGameResultHeader(rm Room) []byte {
 	case ModeGhost:
 		WriteUint8(&buf, 0, &offset)
 		WriteUint32(&buf, 0, &offset)
-	case ModeZombie, ModeZombiecraft, ModeZombie_commander, ModeZombie_prop, ModeZombie_zeta, ModeZ_scenario, ModeZ_scenario_side:
+	case ModeZombie, ModeZombiecraft, ModeZombie_commander, ModeZombie_prop, ModeZombie_zeta, ModeZ_scenario, ModeZ_scenario_side, ModeHeroes:
 
 	default:
 		WriteUint8(&buf, rm.WinnerTeam, &offset) //winner team？ 0x02 ，生化模式貌似没有？
@@ -156,7 +156,7 @@ func BuildGameResultHeader(rm Room) []byte {
 			case ModeDeathmatch, ModeTeamdeath, ModeTeamdeath_mutation:
 			case ModeStealth:
 				WriteUint16(&temp, 0, &offset) //unk17
-			case ModeZombie, ModeZombiecraft, ModeZombie_commander, ModeZombie_prop, ModeZombie_zeta, ModeGhost, ModeZ_scenario, ModeZ_scenario_side:
+			case ModeZombie, ModeZombiecraft, ModeZombie_commander, ModeZombie_prop, ModeZombie_zeta, ModeGhost, ModeZ_scenario, ModeZ_scenario_side, ModeHeroes:
 			default:
 				WriteUint32(&temp, 0, &offset) //unk17,貌似有时候不用
 			}
