@@ -1,13 +1,13 @@
 package host
 
 import (
-	"log"
 	"net"
 
 	. "github.com/KouKouChan/CSO2-Server/blademaster/core/room"
 	. "github.com/KouKouChan/CSO2-Server/blademaster/typestruct"
 	. "github.com/KouKouChan/CSO2-Server/kerlong"
 	. "github.com/KouKouChan/CSO2-Server/servermanager"
+	. "github.com/KouKouChan/CSO2-Server/verbose"
 )
 
 func OnHostGameEnd(p *PacketData, client net.Conn) {
@@ -15,7 +15,7 @@ func OnHostGameEnd(p *PacketData, client net.Conn) {
 	uPtr := GetUserFromConnection(client)
 	if uPtr == nil ||
 		uPtr.Userid <= 0 {
-		log.Println("Error : A user request to send GameEnd but not in server!")
+		DebugInfo(2, "Error : A user request to send GameEnd but not in server!")
 		return
 	}
 	//找到玩家的房间
@@ -24,12 +24,12 @@ func OnHostGameEnd(p *PacketData, client net.Conn) {
 		uPtr.GetUserRoomID())
 	if rm == nil ||
 		rm.Id <= 0 {
-		log.Println("Error : User", string(uPtr.Username), "try to send GameEnd but in a null room !")
+		DebugInfo(2, "Error : User", string(uPtr.Username), "try to send GameEnd but in a null room !")
 		return
 	}
 	//是不是房主
 	if rm.HostUserID != uPtr.Userid {
-		log.Println("Error : User", string(uPtr.Username), "try to send GameEnd but isn't host !")
+		DebugInfo(2, "Error : User", string(uPtr.Username), "try to send GameEnd but isn't host !")
 		return
 	}
 	//修改房间信息
@@ -49,7 +49,7 @@ func OnHostGameEnd(p *PacketData, client net.Conn) {
 			//发送游戏战绩
 			rst = BytesCombine(BuildHeader(v.CurrentSequence, PacketTypeRoom), header, BuildGameResult(v))
 			SendPacket(rst, v.CurrentConnection)
-			log.Println("Sent game result to User", string(v.Username))
+			DebugInfo(2, "Sent game result to User", string(v.Username))
 			//修改用户状态
 			v.SetUserIngame(false)
 		}

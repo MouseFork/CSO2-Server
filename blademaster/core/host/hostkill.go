@@ -1,18 +1,18 @@
 package host
 
 import (
-	"log"
 	"net"
 
 	. "github.com/KouKouChan/CSO2-Server/blademaster/typestruct"
 	. "github.com/KouKouChan/CSO2-Server/servermanager"
+	. "github.com/KouKouChan/CSO2-Server/verbose"
 )
 
 func OnHostKillPacket(p *PacketData, client net.Conn) {
 	//检索数据包
 	var pkt InKillPacket
 	if !p.PraseInKillPacket(&pkt) {
-		log.Println("Error : Client from", client.RemoteAddr().String(), "sent a error HostKill packet !")
+		DebugInfo(2, "Error : Client from", client.RemoteAddr().String(), "sent a error HostKill packet !")
 		return
 	}
 	//找到对应用户

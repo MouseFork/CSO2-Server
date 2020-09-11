@@ -1,25 +1,25 @@
 package playerinfo
 
 import (
-	"log"
 	"net"
 
 	. "github.com/KouKouChan/CSO2-Server/blademaster/typestruct"
 	. "github.com/KouKouChan/CSO2-Server/kerlong"
 	. "github.com/KouKouChan/CSO2-Server/servermanager"
+	. "github.com/KouKouChan/CSO2-Server/verbose"
 )
 
 func OnSetAvatar(p *PacketData, client net.Conn) {
 	var pkt InSetAvatarPacket
 	if !p.PraseSetAvatarPacket(&pkt) {
-		log.Println("Error : Client from", client.RemoteAddr().String(), "sent a illegal SetAvatar packet !")
+		DebugInfo(2, "Error : Client from", client.RemoteAddr().String(), "sent a illegal SetAvatar packet !")
 		return
 	}
 	//找到对应用户
 	uPtr := GetUserFromConnection(client)
 	if uPtr == nil ||
 		uPtr.Userid <= 0 {
-		log.Println("Error : Client from", client.RemoteAddr().String(), "try to SetAvatar but not in server !")
+		DebugInfo(2, "Error : Client from", client.RemoteAddr().String(), "try to SetAvatar but not in server !")
 		return
 	}
 	//修改数据
@@ -27,7 +27,7 @@ func OnSetAvatar(p *PacketData, client net.Conn) {
 	//发送数据包
 	rst := BytesCombine(BuildHeader(uPtr.CurrentSequence, PacketTypeUserInfo), BuildSetAvatarPacket(uPtr.Userid, pkt.AvatarId))
 	SendPacket(rst, uPtr.CurrentConnection)
-	log.Println("User", string(uPtr.Username), "Set Avatar to", pkt.AvatarId)
+	DebugInfo(2, "User", string(uPtr.Username), "Set Avatar to", pkt.AvatarId)
 	//如果是在房间内
 }
 

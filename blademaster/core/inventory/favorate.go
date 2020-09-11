@@ -1,11 +1,11 @@
 package inventory
 
 import (
-	"log"
 	"net"
 
 	. "github.com/KouKouChan/CSO2-Server/blademaster/typestruct"
 	. "github.com/KouKouChan/CSO2-Server/kerlong"
+	. "github.com/KouKouChan/CSO2-Server/verbose"
 )
 
 const (
@@ -22,7 +22,7 @@ var (
 func OnFavorite(p *PacketData, client net.Conn) {
 	var pkt InFavoritePacket
 	if !p.PraseFavoritePacket(&pkt) {
-		log.Println("Error : Recived a illegal favorite packet from", client.RemoteAddr().String())
+		DebugInfo(2, "Error : Recived a illegal favorite packet from", client.RemoteAddr().String())
 		return
 	}
 	switch pkt.PacketType {
@@ -33,7 +33,7 @@ func OnFavorite(p *PacketData, client net.Conn) {
 		//log.Println("Recived a favorite SetCosmetics packet from", client.RemoteAddr().String())
 		OnFavoriteSetCosmetics(p, client)
 	default:
-		log.Println("Unknown favorite packet", pkt.PacketType, "from", client.RemoteAddr().String())
+		DebugInfo(2, "Unknown favorite packet", pkt.PacketType, "from", client.RemoteAddr().String())
 	}
 }
 

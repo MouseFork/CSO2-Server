@@ -1,10 +1,10 @@
 package host
 
 import (
-	"log"
 	"net"
 
 	. "github.com/KouKouChan/CSO2-Server/blademaster/typestruct"
+	. "github.com/KouKouChan/CSO2-Server/verbose"
 )
 
 const (
@@ -61,9 +61,9 @@ func OnHost(p *PacketData, client net.Conn) {
 		case HostUnk00:
 			//fmt.Println("TeamWinPacket", p.data[:p.datalen], "from", client.RemoteAddr().String())
 		default:
-			log.Println("Unknown host packet", pkt.InHostType, "from", client.RemoteAddr().String())
+			DebugInfo(2, "Unknown host packet", pkt.InHostType, "from", client.RemoteAddr().String())
 		}
 	} else {
-		log.Println("Error : Recived a illegal host packet from", client.RemoteAddr().String())
+		DebugInfo(2, "Error : Recived a illegal host packet from", client.RemoteAddr().String())
 	}
 }

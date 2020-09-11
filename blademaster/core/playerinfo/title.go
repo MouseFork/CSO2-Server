@@ -1,25 +1,25 @@
 package playerinfo
 
 import (
-	"log"
 	"net"
 
 	. "github.com/KouKouChan/CSO2-Server/blademaster/typestruct"
 	. "github.com/KouKouChan/CSO2-Server/kerlong"
 	. "github.com/KouKouChan/CSO2-Server/servermanager"
+	. "github.com/KouKouChan/CSO2-Server/verbose"
 )
 
 func OnSetTitle(p *PacketData, client net.Conn) {
 	var pkt InSetTitlePacket
 	if !p.PraseSetTitlePacket(&pkt) {
-		log.Println("Error : Client from", client.RemoteAddr().String(), "sent a illegal SetTitle packet !")
+		DebugInfo(2, "Error : Client from", client.RemoteAddr().String(), "sent a illegal SetTitle packet !")
 		return
 	}
 	//找到对应用户
 	uPtr := GetUserFromConnection(client)
 	if uPtr == nil ||
 		uPtr.Userid <= 0 {
-		log.Println("Error : Client from", client.RemoteAddr().String(), "try to SetTitle but not in server !")
+		DebugInfo(2, "Error : Client from", client.RemoteAddr().String(), "try to SetTitle but not in server !")
 		return
 	}
 	//修改数据
@@ -27,7 +27,7 @@ func OnSetTitle(p *PacketData, client net.Conn) {
 	//发送数据包
 	rst := BytesCombine(BuildHeader(uPtr.CurrentSequence, PacketTypeUserInfo), BuildSetTitlePacket(uPtr.Userid, pkt.TitleId))
 	SendPacket(rst, uPtr.CurrentConnection)
-	log.Println("User", string(uPtr.Username), "Set Title to", pkt.TitleId)
+	DebugInfo(1, "User", string(uPtr.Username), "Set Title to", pkt.TitleId)
 	//如果是在房间内
 }
 

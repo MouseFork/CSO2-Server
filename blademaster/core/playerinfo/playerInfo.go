@@ -1,10 +1,10 @@
 package playerinfo
 
 import (
-	"log"
 	"net"
 
 	. "github.com/KouKouChan/CSO2-Server/blademaster/typestruct"
+	. "github.com/KouKouChan/CSO2-Server/verbose"
 )
 
 const (
@@ -24,9 +24,9 @@ func OnPlayerInfo(p *PacketData, client net.Conn) {
 		case SetAvatar:
 			OnSetAvatar(p, client)
 		default:
-			log.Println("Unknown PlayerInfo packet", pkt.InfoType, "from", client.RemoteAddr().String())
+			DebugInfo(2, "Unknown PlayerInfo packet", pkt.InfoType, "from", client.RemoteAddr().String())
 		}
 	} else {
-		log.Println("Error : Recived a illegal PlayerInfo packet from", client.RemoteAddr().String())
+		DebugInfo(2, "Error : Recived a illegal PlayerInfo packet from", client.RemoteAddr().String())
 	}
 }

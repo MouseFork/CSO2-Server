@@ -6,25 +6,26 @@ import (
 
 	. "github.com/KouKouChan/CSO2-Server/blademaster/typestruct"
 	. "github.com/KouKouChan/CSO2-Server/servermanager"
+	. "github.com/KouKouChan/CSO2-Server/verbose"
 )
 
 func OnFavoriteSetCosmetics(p *PacketData, client net.Conn) {
 	//检索数据包
 	var pkt InFavoriteSetCosmetics
 	if !p.PraseFavoriteSetCosmeticsPacket(&pkt) {
-		log.Println("Error : Client from", client.RemoteAddr().String(), "sent a error SetCosmetics packet !")
+		DebugInfo(2, "Error : Client from", client.RemoteAddr().String(), "sent a error SetCosmetics packet !")
 		return
 	}
 	//找到对应用户
 	uPtr := GetUserFromConnection(client)
 	if uPtr == nil ||
 		uPtr.Userid <= 0 {
-		log.Println("Error : Client from", client.RemoteAddr().String(), "try to SetCosmetics but not in server !")
+		DebugInfo(2, "Error : Client from", client.RemoteAddr().String(), "try to SetCosmetics but not in server !")
 		return
 	}
 	//设置武器
 	setCosmetic(pkt.Slot, pkt.ItemId, uPtr)
-	log.Println("Setting User", string(uPtr.Username), "new Cosmetic", pkt.ItemId, "to slot", pkt.Slot)
+	DebugInfo(1, "Setting User", string(uPtr.Username), "new Cosmetic", pkt.ItemId, "to slot", pkt.Slot)
 	//找到对应房间玩家
 	rm := GetRoomFromID(uPtr.GetUserChannelServerID(),
 		uPtr.GetUserChannelID(),

@@ -1,32 +1,32 @@
 package host
 
 import (
-	"log"
 	"net"
 
 	. "github.com/KouKouChan/CSO2-Server/blademaster/typestruct"
 	. "github.com/KouKouChan/CSO2-Server/kerlong"
 	. "github.com/KouKouChan/CSO2-Server/servermanager"
+	. "github.com/KouKouChan/CSO2-Server/verbose"
 )
 
 func OnHostSetUserLoadout(p *PacketData, client net.Conn) {
 	//检查数据包
 	var pkt InHostSetLoadoutPacket
 	if !p.PraseSetUserLoadoutPacket(&pkt) {
-		log.Println("Error : Cannot prase a send UserLoadout packet !")
+		DebugInfo(2, "Error : Cannot prase a send UserLoadout packet !")
 		return
 	}
 	//找到对应用户
 	uPtr := GetUserFromConnection(client)
 	if uPtr == nil ||
 		uPtr.Userid <= 0 {
-		log.Println("Error : A user request to send UserLoadout but not in server!")
+		DebugInfo(2, "Error : A user request to send UserLoadout but not in server!")
 		return
 	}
 	dest := GetUserFromID(pkt.UserID)
 	if dest == nil ||
 		dest.Userid <= 0 {
-		log.Println("Error : A user request to send UserLoadout but dest user is null!")
+		DebugInfo(2, "Error : A user request to send UserLoadout but dest user is null!")
 		return
 	}
 	//找到玩家的房间
@@ -35,18 +35,18 @@ func OnHostSetUserLoadout(p *PacketData, client net.Conn) {
 		uPtr.GetUserRoomID())
 	if rm == nil ||
 		rm.Id <= 0 {
-		log.Println("Error : User", string(uPtr.Username), "try to send UserLoadout but in a null room !")
+		DebugInfo(2, "Error : User", string(uPtr.Username), "try to send UserLoadout but in a null room !")
 		return
 	}
 	//是不是房主
 	if rm.HostUserID != uPtr.Userid {
-		log.Println("Error : User", string(uPtr.Username), "try to send UserLoadout but isn't host !")
+		DebugInfo(2, "Error : User", string(uPtr.Username), "try to send UserLoadout but isn't host !")
 		return
 	}
 	//发送用户背包数据
 	rst := BytesCombine(BuildHeader(uPtr.CurrentSequence, p.Id), BuildSetUserLoadout(dest))
 	SendPacket(rst, uPtr.CurrentConnection)
-	log.Println("Send User", string(dest.Username), "Loadout to host", string(uPtr.Username))
+	DebugInfo(2, "Send User", string(dest.Username), "Loadout to host", string(uPtr.Username))
 }
 
 func BuildSetUserLoadout(u *User) []byte {

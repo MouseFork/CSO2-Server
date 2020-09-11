@@ -1,10 +1,10 @@
 package option
 
 import (
-	"log"
 	"net"
 
 	. "github.com/KouKouChan/CSO2-Server/blademaster/typestruct"
+	. "github.com/KouKouChan/CSO2-Server/verbose"
 )
 
 const (
@@ -18,9 +18,9 @@ func OnOption(p *PacketData, client net.Conn) {
 		case SaveBuyMenu:
 			OnSaveBuyMenu(p, client)
 		default:
-			log.Println("Unknown option packet", pkt.OptionPacketType, "from", client.RemoteAddr().String())
+			DebugInfo(2, "Unknown option packet", pkt.OptionPacketType, "from", client.RemoteAddr().String())
 		}
 	} else {
-		log.Println("Error : Recived a illegal option packet from", client.RemoteAddr().String())
+		DebugInfo(2, "Error : Recived a illegal option packet from", client.RemoteAddr().String())
 	}
 }

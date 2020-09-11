@@ -1,32 +1,32 @@
 package host
 
 import (
-	"log"
 	"net"
 
 	. "github.com/KouKouChan/CSO2-Server/blademaster/typestruct"
 	. "github.com/KouKouChan/CSO2-Server/kerlong"
 	. "github.com/KouKouChan/CSO2-Server/servermanager"
+	. "github.com/KouKouChan/CSO2-Server/verbose"
 )
 
 func OnHostSetUserBuyMenu(p *PacketData, client net.Conn) {
 	//检查数据包
 	var pkt InHostSetBuyMenu
 	if !p.PraseSetBuyMenuPacket(&pkt) {
-		log.Println("Error : Cannot prase a send BuyMenu packet !")
+		DebugInfo(2, "Error : Cannot prase a send BuyMenu packet !")
 		return
 	}
 	//找到对应用户
 	uPtr := GetUserFromConnection(client)
 	if uPtr == nil ||
 		uPtr.Userid <= 0 {
-		log.Println("Error : A user request to send BuyMenu but not in server!")
+		DebugInfo(2, "Error : A user request to send BuyMenu but not in server!")
 		return
 	}
 	dest := GetUserFromID(pkt.Userid)
 	if dest == nil ||
 		dest.Userid <= 0 {
-		log.Println("Error : A user request to send BuyMenu but dest user is null!")
+		DebugInfo(2, "Error : A user request to send BuyMenu but dest user is null!")
 		return
 	}
 	//找到玩家的房间
@@ -35,7 +35,7 @@ func OnHostSetUserBuyMenu(p *PacketData, client net.Conn) {
 		uPtr.GetUserRoomID())
 	if rm == nil ||
 		rm.Id <= 0 {
-		log.Println("Error : User", string(uPtr.Username), "try to send BuyMenu but in a null room !")
+		DebugInfo(2, "Error : User", string(uPtr.Username), "try to send BuyMenu but in a null room !")
 		return
 	}
 	destRm := GetRoomFromID(dest.GetUserChannelServerID(),
@@ -43,23 +43,22 @@ func OnHostSetUserBuyMenu(p *PacketData, client net.Conn) {
 		dest.GetUserRoomID())
 	if destRm == nil ||
 		destRm.Id <= 0 {
-		log.Println("Error : User", string(dest.Username), "try to send BuyMenu but in a null room !")
+		DebugInfo(2, "Error : User", string(dest.Username), "try to send BuyMenu but in a null room !")
 		return
 	}
 	if rm.Id != destRm.Id {
-		log.Println("Error : User", string(dest.Username), "try to send BuyMenu to", string(dest.Username), "but not a same room !")
+		DebugInfo(2, "Error : User", string(dest.Username), "try to send BuyMenu to", string(dest.Username), "but not a same room !")
 		return
 	}
 	//是不是房主
 	if rm.HostUserID != uPtr.Userid {
-
-		log.Println("Error : User", string(uPtr.Username), "try to send BuyMenu but isn't host !")
+		DebugInfo(2, "Error : User", string(uPtr.Username), "try to send BuyMenu but isn't host !")
 		return
 	}
 	//发送数据包
 	rst := BytesCombine(BuildHeader(uPtr.CurrentSequence, p.Id), BuildSetBuyMenu(dest.Userid, &dest.Inventory))
 	SendPacket(rst, uPtr.CurrentConnection)
-	log.Println("Send User", string(dest.Username), "BuyMenu to host", string(uPtr.Username))
+	DebugInfo(2, "Send User", string(dest.Username), "BuyMenu to host", string(uPtr.Username))
 
 }
 

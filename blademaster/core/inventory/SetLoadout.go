@@ -1,36 +1,36 @@
 package inventory
 
 import (
-	"log"
 	"net"
 
 	. "github.com/KouKouChan/CSO2-Server/blademaster/typestruct"
 	. "github.com/KouKouChan/CSO2-Server/kerlong"
 	. "github.com/KouKouChan/CSO2-Server/servermanager"
+	. "github.com/KouKouChan/CSO2-Server/verbose"
 )
 
 func OnFavoriteSetLoadout(p *PacketData, client net.Conn) {
 	//检索数据包
 	var pkt InFavoriteSetLoadout
 	if !p.PraseFavoriteSetLoadoutPacket(&pkt) {
-		log.Println("Error : Client from", client.RemoteAddr().String(), "sent a error SetLoadout packet !")
+		DebugInfo(2, "Error : Client from", client.RemoteAddr().String(), "sent a error SetLoadout packet !")
 		return
 	}
 	//找到对应用户
 	uPtr := GetUserFromConnection(client)
 	if uPtr == nil ||
 		uPtr.Userid <= 0 {
-		log.Println("Error : Client from", client.RemoteAddr().String(), "try to SetLoadout but not in server !")
+		DebugInfo(2, "Error : Client from", client.RemoteAddr().String(), "try to SetLoadout but not in server !")
 		return
 	}
 	//设置武器
 	if pkt.Loadout > 2 ||
 		pkt.WeaponSlot > 6 {
-		log.Println("Error : User", string(uPtr.Username), "try to SetLoadout with invalid data !")
+		DebugInfo(2, "Error : User", string(uPtr.Username), "try to SetLoadout with invalid data !")
 		return
 	}
 	uPtr.Inventory.Loadouts[pkt.Loadout].Items[pkt.WeaponSlot] = pkt.ItemId
-	log.Println("Setting User", string(uPtr.Username), "new weapon", pkt.ItemId, "to slot", pkt.WeaponSlot, "in loadout", pkt.Loadout)
+	DebugInfo(1, "Setting User", string(uPtr.Username), "new weapon", pkt.ItemId, "to slot", pkt.WeaponSlot, "in loadout", pkt.Loadout)
 }
 func BuildLoadout(inventory *UserInventory) []byte {
 	buf := make([]byte, 5+len(inventory.Loadouts)*96)
