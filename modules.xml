@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/CSO2-Server-NEW.iml" filepath="$PROJECT_DIR$/.idea/CSO2-Server-NEW.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/CSO2-Server.iml" filepath="$PROJECT_DIR$/.idea/CSO2-Server-NEW.iml" />
     </modules>
   </component>
 </project>

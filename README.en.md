@@ -23,6 +23,10 @@ Counter-Strike Online 2 Server
     4. Start game server and use bat file to launch your game.
     5. Have fun!
 
+attention!
+
+- If you want to enable registration , you should modify server.conf file , and set EnableRegister to 1 , and you must set your email smtp server and your email code.then you can open localhost:1314 with your browser.
+
 ### 0x04 Build
 
     1. open the folder

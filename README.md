@@ -57,7 +57,7 @@ CSOL2 服务器 v0.3.0
 START ./bin/launcher.exe -masterip IP地址 -enablecustom -username 用户名 -password 密码
 ```
 
-4.IP地址指的是你的服务端IP，如果是本地那么就填192.168开头的你的IP地址，如果你要连接局域网别人的服务端那么就填别人的IP地址，如果你安装了汉化包，也可以再加上以下语句：
+4.IP地址指的是你的服务端IP，如果是本地那么就填127.0.0.1，如果你要连接局域网别人的服务端那么就填别人的IP地址，如果你安装了汉化包，也可以再加上以下语句：
 
 ```shell
 -lang schinese
@@ -65,7 +65,8 @@ START ./bin/launcher.exe -masterip IP地址 -enablecustom -username 用户名 -p
 
 5.先运行本项目的exe文件启动服务器，然后打开bat文件启动客户端即可
 
-注意：从网盘里面下载得到的start-cso2.bat文件需要修改里面的IP地址和用户名！
+- 从网盘里面下载得到的start-cso2.bat文件需要修改里面的IP地址和用户名！
+- 如果你需要注册，请修改server.conf文件，将EnableRegister值修改为1，默认注册端口为1314,同时你需要一个邮箱账号并且申请到了密钥，然后你可以使用浏览器打开localhost:1314来注册。
 
 ### 八、自定义文件方法
 

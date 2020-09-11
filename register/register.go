@@ -46,7 +46,7 @@ func OnRegister() {
 	MailService.SenderMail = Conf.REGEmail
 	MailService.SenderCode = Conf.REGPassWord
 	MailService.SenderSMTP = Conf.REGSMTPaddr
-	http.HandleFunc("/register", Register)
+	http.HandleFunc("/", Register)
 	http.HandleFunc("/bg.jpg", OnJpg)
 	fmt.Println("Web is running at", "[AnyAdapter]:"+strconv.Itoa(int(Conf.REGPort)))
 	err := http.ListenAndServe(":"+strconv.Itoa(int(Conf.REGPort)), nil)
