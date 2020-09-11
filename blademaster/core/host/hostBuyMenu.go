@@ -1,4 +1,4 @@
-package inventory
+package host
 
 import (
 	"log"
@@ -6,58 +6,64 @@ import (
 
 	. "github.com/KouKouChan/CSO2-Server/blademaster/typestruct"
 	. "github.com/KouKouChan/CSO2-Server/kerlong"
+	. "github.com/KouKouChan/CSO2-Server/servermanager"
 )
 
-const (
-	FavoriteSetLoadout   = 0
-	FavoriteSetCosmetics = 1
-
-	OptionSetBuyMenu = 1
-)
-
-var (
-	DeafaultInventoryItem = BuildDefaultInventoryInfo()
-)
-
-func OnFavorite(p *PacketData, client net.Conn) {
-	var pkt InFavoritePacket
-	if !p.PraseFavoritePacket(&pkt) {
-		log.Println("Error : Recived a illegal favorite packet from", client.RemoteAddr().String())
+func OnHostSetUserBuyMenu(p *PacketData, client net.Conn) {
+	//检查数据包
+	var pkt InHostSetBuyMenu
+	if !p.PraseSetBuyMenuPacket(&pkt) {
+		log.Println("Error : Cannot prase a send BuyMenu packet !")
 		return
 	}
-	switch pkt.PacketType {
-	case FavoriteSetLoadout:
-		//log.Println("Recived a favorite SetLoadout packet from", client.RemoteAddr().String())
-		OnFavoriteSetLoadout(p, client)
-	case FavoriteSetCosmetics:
-		//log.Println("Recived a favorite SetCosmetics packet from", client.RemoteAddr().String())
-		OnFavoriteSetCosmetics(p, client)
-	default:
-		log.Println("Unknown favorite packet", pkt.PacketType, "from", client.RemoteAddr().String())
+	//找到对应用户
+	uPtr := GetUserFromConnection(client)
+	if uPtr == nil ||
+		uPtr.Userid <= 0 {
+		log.Println("Error : A user request to send BuyMenu but not in server!")
+		return
 	}
+	dest := GetUserFromID(pkt.Userid)
+	if dest == nil ||
+		dest.Userid <= 0 {
+		log.Println("Error : A user request to send BuyMenu but dest user is null!")
+		return
+	}
+	//找到玩家的房间
+	rm := GetRoomFromID(uPtr.GetUserChannelServerID(),
+		uPtr.GetUserChannelID(),
+		uPtr.GetUserRoomID())
+	if rm == nil ||
+		rm.Id <= 0 {
+		log.Println("Error : User", string(uPtr.Username), "try to send BuyMenu but in a null room !")
+		return
+	}
+	destRm := GetRoomFromID(dest.GetUserChannelServerID(),
+		dest.GetUserChannelID(),
+		dest.GetUserRoomID())
+	if destRm == nil ||
+		destRm.Id <= 0 {
+		log.Println("Error : User", string(dest.Username), "try to send BuyMenu but in a null room !")
+		return
+	}
+	if rm.Id != destRm.Id {
+		log.Println("Error : User", string(dest.Username), "try to send BuyMenu to", string(dest.Username), "but not a same room !")
+		return
+	}
+	//是不是房主
+	if rm.HostUserID != uPtr.Userid {
+
+		log.Println("Error : User", string(uPtr.Username), "try to send BuyMenu but isn't host !")
+		return
+	}
+	//发送数据包
+	rst := BytesCombine(BuildHeader(uPtr.CurrentSequence, p.Id), BuildSetBuyMenu(dest.Userid, &dest.Inventory))
+	SendPacket(rst, uPtr.CurrentConnection)
+	log.Println("Send User", string(dest.Username), "BuyMenu to host", string(uPtr.Username))
+
 }
 
-func BuildCosmetics(inventory *UserInventory) []byte {
-	buf := make([]byte, 2)
-	offset := 0
-	curItem := uint8(0)
-	WriteUint8(&buf, FavoriteSetCosmetics, &offset)
-	WriteUint8(&buf, 10, &offset)
-	temp := WriteItem(inventory.CTModel, &curItem)
-	temp = BytesCombine(temp, WriteItem(inventory.TModel, &curItem))
-	temp = BytesCombine(temp, WriteItem(inventory.HeadItem, &curItem))
-	temp = BytesCombine(temp, WriteItem(inventory.GloveItem, &curItem))
-	temp = BytesCombine(temp, WriteItem(inventory.BackItem, &curItem))
-	temp = BytesCombine(temp, WriteItem(inventory.StepsItem, &curItem))
-	temp = BytesCombine(temp, WriteItem(inventory.CardItem, &curItem))
-	temp = BytesCombine(temp, WriteItem(inventory.SprayItem, &curItem))
-	temp = BytesCombine(temp, WriteItem(0, &curItem))
-	temp = BytesCombine(temp, WriteItem(0, &curItem))
-	buf = BytesCombine(buf[:offset], temp)
-	return buf
-}
-
-func BuildBuyMenu(inventory *UserInventory) []byte {
+func BuildSetBuyMenu(id uint32, inventory *UserInventory) []byte {
 	l := 6 * (len(inventory.BuyMenu.Pistols) +
 		len(inventory.BuyMenu.Shotguns) +
 		len(inventory.BuyMenu.Smgs) +
@@ -66,11 +72,12 @@ func BuildBuyMenu(inventory *UserInventory) []byte {
 		len(inventory.BuyMenu.Machineguns) +
 		len(inventory.BuyMenu.Melees) +
 		len(inventory.BuyMenu.Equipment))
-	buf := make([]byte, 4+l)
+	buf := make([]byte, 8+l)
 	offset := 0
-	WriteUint8(&buf, OptionSetBuyMenu, &offset)
-	WriteUint16(&buf, 369, &offset)
-	WriteUint8(&buf, 2, &offset)
+	WriteUint8(&buf, SetBuyMenu, &offset)
+	WriteUint32(&buf, id, &offset)
+	WriteUint16(&buf, 369, &offset) //buyMenuByteLength
+	WriteUint8(&buf, 0, &offset)
 	WriteUint8(&buf, uint8(len(inventory.BuyMenu.Pistols)), &offset)
 	for k, v := range inventory.BuyMenu.Pistols {
 		WriteUint8(&buf, uint8(k), &offset)
@@ -117,6 +124,5 @@ func BuildBuyMenu(inventory *UserInventory) []byte {
 		WriteUint8(&buf, uint8(k), &offset)
 		WriteUint32(&buf, v, &offset)
 	}
-
 	return buf[:offset]
 }

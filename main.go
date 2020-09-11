@@ -9,7 +9,11 @@ import (
 	"syscall"
 
 	. "github.com/KouKouChan/CSO2-Server/blademaster/core/holepunch"
+	. "github.com/KouKouChan/CSO2-Server/blademaster/core/host"
+	. "github.com/KouKouChan/CSO2-Server/blademaster/core/inventory"
 	. "github.com/KouKouChan/CSO2-Server/blademaster/core/message"
+	. "github.com/KouKouChan/CSO2-Server/blademaster/core/option"
+	. "github.com/KouKouChan/CSO2-Server/blademaster/core/playerinfo"
 	. "github.com/KouKouChan/CSO2-Server/blademaster/core/quick"
 	. "github.com/KouKouChan/CSO2-Server/blademaster/core/room"
 	. "github.com/KouKouChan/CSO2-Server/blademaster/core/user"
@@ -237,9 +241,13 @@ func RecvMessage(client net.Conn) {
 		case PacketTypeRoom:
 			OnRoomRequest(&dataPacket, client)
 		case PacketTypeHost:
+			OnHost(&dataPacket, client)
 		case PacketTypeFavorite:
+			OnFavorite(&dataPacket, client)
 		case PacketTypeOption:
+			OnOption(&dataPacket, client)
 		case PacketTypePlayerInfo:
+			OnPlayerInfo(&dataPacket, client)
 		default:
 			DebugInfo(2, "Unknown packet", dataPacket.Id, "from", client.RemoteAddr().String())
 		}

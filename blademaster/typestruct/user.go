@@ -354,6 +354,15 @@ func (u *User) SetTitle(id uint16) {
 	u.TitleId = id
 }
 
+func (u *User) SetBuyMenu(menu UserBuyMenu) {
+	if u == nil {
+		return
+	}
+	u.UserMutex.Lock()
+	defer u.UserMutex.Unlock()
+	u.Inventory.BuyMenu = menu
+}
+
 func GetNewUser() User {
 	var mutex sync.Mutex
 	return User{

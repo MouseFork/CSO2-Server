@@ -417,6 +417,8 @@ func (rm *Room) SetRoomScore(ctScore uint8, trScore uint8) {
 	if rm == nil {
 		return
 	}
+	rm.RoomMutex.Lock()
+	defer rm.RoomMutex.Unlock()
 	rm.CtScore = ctScore
 	rm.TrScore = trScore
 }
@@ -425,6 +427,8 @@ func (rm *Room) ResetRoomScore() {
 	if rm == nil {
 		return
 	}
+	rm.RoomMutex.Lock()
+	defer rm.RoomMutex.Unlock()
 	rm.CtScore = 0
 	rm.TrScore = 0
 }
@@ -432,6 +436,8 @@ func (rm *Room) SetRoomWinner(Winner uint8) {
 	if rm == nil {
 		return
 	}
+	rm.RoomMutex.Lock()
+	defer rm.RoomMutex.Unlock()
 	rm.WinnerTeam = Winner
 }
 
@@ -439,12 +445,16 @@ func (rm *Room) ResetRoomWinner() {
 	if rm == nil {
 		return
 	}
+	rm.RoomMutex.Lock()
+	defer rm.RoomMutex.Unlock()
 	rm.WinnerTeam = 0
 }
 func (rm *Room) CountRoomCtKill() {
 	if rm == nil {
 		return
 	}
+	rm.RoomMutex.Lock()
+	defer rm.RoomMutex.Unlock()
 	rm.CtKillNum++
 }
 
@@ -452,6 +462,8 @@ func (rm *Room) CountRoomTrKill() {
 	if rm == nil {
 		return
 	}
+	rm.RoomMutex.Lock()
+	defer rm.RoomMutex.Unlock()
 	rm.TrKillNum++
 }
 
@@ -459,6 +471,8 @@ func (rm *Room) ResetRoomKillNum() {
 	if rm == nil {
 		return
 	}
+	rm.RoomMutex.Lock()
+	defer rm.RoomMutex.Unlock()
 	rm.CtKillNum = 0
 	rm.TrKillNum = 0
 }

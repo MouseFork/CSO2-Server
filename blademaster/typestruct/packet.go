@@ -1,6 +1,7 @@
 package typestruct
 
 import (
+	"log"
 	"math"
 	"net"
 	"unsafe"
@@ -169,6 +170,104 @@ type (
 	InChangeTeamPacket struct {
 		NewTeam uint8
 	}
+
+	InFavoriteSetLoadout struct {
+		Loadout    uint8
+		WeaponSlot uint8
+		ItemId     uint32
+	}
+
+	InPlayerInfoPacket struct {
+		InfoType uint8
+	}
+
+	InSetSignaturePacket struct {
+		Len       uint8
+		Signature []byte
+	}
+
+	InSetAvatarPacket struct {
+		AvatarId uint16
+	}
+
+	InSetTitlePacket struct {
+		TitleId uint16
+	}
+
+	InOptionPacket struct {
+		OptionPacketType uint8
+	}
+
+	InOptionBuyMenu struct {
+		MenuLength uint16
+		Unk00      uint8
+		Buymenu    UserBuyMenu
+	}
+
+	InKillPacket struct {
+		Unk00      uint8 //一直是0
+		KillerID   uint32
+		Unk01      uint32 //一直是0
+		Unk02      uint8
+		KillType   uint8  //貌似是击杀方式？
+		KillNum    uint16 //杀敌数,生化模式3倍
+		PlayerTeam uint8  //待定
+	}
+
+	InDeathPacket struct {
+		DeadID     uint32
+		Unk00      uint32 //一直是0
+		Unk01      uint8  //貌似是死亡方式？
+		DeathNum   uint16 //死亡数,生化模式3倍
+		PlayerTeam uint8  //待定
+	}
+
+	InRevivedPacket struct {
+		UserID uint32
+		X      uint32 //待定，但是极像坐标
+		Y      uint32
+		Z      uint32
+		Unk00  uint8
+	}
+
+	InAssistPacket struct {
+		KillerID     uint32
+		Unk00        uint8  //可能是辅助击杀人数？
+		AssisterID   uint32 //貌似是击杀方式？
+		Unk01        uint16
+		Unk02        uint16
+		Unk03        uint16
+		AssisterTeam uint8 //待定,也可能是杀手的队伍
+	}
+
+	InHostSetBuyMenu struct {
+		Userid uint32
+	}
+
+	InHostTeamChangingPacket struct {
+		UserId uint32
+		Unk00  uint8
+		//unk01   uint8
+		NewTeam uint8
+	}
+
+	InHostSetLoadoutPacket struct {
+		UserID uint32
+	}
+
+	InGameScorePacket struct {
+		WinnerTeam uint8
+		TrScore    uint8
+		CtScore    uint8
+		PacketType uint8 //maybe
+		HostID     uint32
+		Unk00      uint32
+	}
+
+	InHostSetInventoryPacket struct {
+		UserID uint32
+	}
+
 	//未知，用于请求频道
 	OutLobbyJoinRoom struct {
 		Unk00 uint8
@@ -214,6 +313,8 @@ const (
 	MAXSEQUENCE = math.MaxUint8
 	//server will read 4 bytes of header
 	HeaderLen = 4
+
+	SUBMENU_ITEM_NUM = 9
 )
 
 func (p *PacketHeader) PraseHeadPacket() {
@@ -512,6 +613,222 @@ func (p *PacketData) PraseChangeTeamPacket(dest *InChangeTeamPacket) bool {
 		return false
 	}
 	dest.NewTeam = ReadUint8(p.Data, &p.CurOffset)
+	return true
+}
+
+func (p *PacketData) PraseFavoriteSetLoadoutPacket(dest *InFavoriteSetLoadout) bool {
+	//id + loadout + Loadout +  ItemId + WeaponSlot = 8 bytes
+	if p.Length < 8 {
+		return false
+	}
+	dest.Loadout = ReadUint8(p.Data, &p.CurOffset)
+	dest.WeaponSlot = ReadUint8(p.Data, &p.CurOffset)
+	dest.ItemId = ReadUint32(p.Data, &p.CurOffset)
+	return true
+}
+
+func (p *PacketData) PrasePlayerInfoPacket(dest *InPlayerInfoPacket) bool {
+	//id + type = 2 bytes
+	if p.Length < 2 {
+		return false
+	}
+	dest.InfoType = ReadUint8(p.Data, &p.CurOffset)
+	return true
+}
+
+func (p *PacketData) PraseSetSignaturePacket(dest *InSetSignaturePacket) bool {
+	//id + type + le = 3 bytes
+	if p.Length < 3 {
+		return false
+	}
+	dest.Len = ReadUint8(p.Data, &p.CurOffset)
+	dest.Signature = ReadString(p.Data, &p.CurOffset, int(dest.Len))
+	return true
+}
+
+func (p *PacketData) PraseSetAvatarPacket(dest *InSetAvatarPacket) bool {
+	//id + type + avatar = 4 bytes
+	if p.Length < 4 {
+		return false
+	}
+	(*dest).AvatarId = ReadUint16(p.Data, &p.CurOffset)
+	return true
+}
+
+func (p *PacketData) PraseSetTitlePacket(dest *InSetTitlePacket) bool {
+	//id + type + avatar = 4 bytes
+	if p.Length < 4 {
+		return false
+	}
+	dest.TitleId = ReadUint16(p.Data, &p.CurOffset)
+	return true
+}
+
+func (p *PacketData) PraseOptionPacket(dest *InOptionPacket) bool {
+	//id + type = 2 bytes
+	if p.Length < 2 {
+		return false
+	}
+	dest.OptionPacketType = ReadUint8(p.Data, &p.CurOffset)
+	return true
+}
+
+func (p *PacketData) PraseSaveBuyMenu(dest *InOptionBuyMenu) bool {
+	//id + type + length + unk00 = 5 bytes
+	if p.Length < 5 {
+		return false
+	}
+	dest.MenuLength = ReadUint16(p.Data, &p.CurOffset)
+	dest.Unk00 = ReadUint8(p.Data, &p.CurOffset)
+	dest.Buymenu.Pistols = ReadSubMenu(p.Data, &p.CurOffset)
+	dest.Buymenu.Shotguns = ReadSubMenu(p.Data, &p.CurOffset)
+	dest.Buymenu.Smgs = ReadSubMenu(p.Data, &p.CurOffset)
+	dest.Buymenu.Rifles = ReadSubMenu(p.Data, &p.CurOffset)
+	dest.Buymenu.Snipers = ReadSubMenu(p.Data, &p.CurOffset)
+	dest.Buymenu.Machineguns = ReadSubMenu(p.Data, &p.CurOffset)
+	dest.Buymenu.Melees = ReadSubMenu(p.Data, &p.CurOffset)
+	dest.Buymenu.Equipment = ReadSubMenu(p.Data, &p.CurOffset)
+	return true
+}
+
+func ReadSubMenu(b []byte, offset *int) []uint32 {
+	len := ReadUint8(b, offset)
+	if len != SUBMENU_ITEM_NUM {
+		log.Println("Length of submenu is illegal !")
+	}
+	var submenu []uint32
+	for i := 0; i < SUBMENU_ITEM_NUM; i++ {
+		ReadUint8(b, offset)
+		submenu = append(submenu, ReadUint32(b, offset))
+	}
+	return submenu
+}
+
+func (p *PacketData) PraseHostPacket(dest *InHostPacket) bool {
+	//id + type = 2 bytes
+	if p.Length < 2 {
+		return false
+	}
+	dest.InHostType = ReadUint8(p.Data, &p.CurOffset)
+	return true
+}
+
+func (p *PacketData) PraseInKillPacket(dest *InKillPacket) bool {
+	//id + type + ... = 16 bytes
+	if p.Length < 16 ||
+		dest == nil {
+		return false
+	}
+	dest.Unk00 = ReadUint8(p.Data, &p.CurOffset)
+	dest.KillerID = ReadUint32(p.Data, &p.CurOffset)
+	dest.Unk01 = ReadUint32(p.Data, &p.CurOffset)
+	dest.Unk02 = ReadUint8(p.Data, &p.CurOffset)
+	dest.KillType = ReadUint8(p.Data, &p.CurOffset)
+	dest.KillNum = ReadUint16(p.Data, &p.CurOffset)
+	dest.PlayerTeam = ReadUint8(p.Data, &p.CurOffset)
+	return true
+}
+
+func (p *PacketData) PraseInRevivedPacket(dest *InRevivedPacket) bool {
+	//id + type + ... = 19 bytes
+	if p.Length < 19 ||
+		dest == nil {
+		return false
+	}
+	dest.UserID = ReadUint32(p.Data, &p.CurOffset)
+	dest.X = ReadUint32(p.Data, &p.CurOffset)
+	dest.Y = ReadUint32(p.Data, &p.CurOffset)
+	dest.Z = ReadUint32(p.Data, &p.CurOffset)
+	dest.Unk00 = ReadUint8(p.Data, &p.CurOffset)
+	return true
+}
+
+func (p *PacketData) PraseInDeathPacket(dest *InDeathPacket) bool {
+	//id + type + ... = 14 bytes
+	if p.Length < 14 ||
+		dest == nil {
+		return false
+	}
+	dest.DeadID = ReadUint32(p.Data, &p.CurOffset)
+	dest.Unk00 = ReadUint32(p.Data, &p.CurOffset)
+	dest.Unk01 = ReadUint8(p.Data, &p.CurOffset)
+	dest.DeathNum = ReadUint16(p.Data, &p.CurOffset)
+	dest.PlayerTeam = ReadUint8(p.Data, &p.CurOffset)
+	return true
+}
+
+func (p *PacketData) PraseInAssistPacket(dest *InAssistPacket) bool {
+	//id + type + ... = 18 bytes
+	if p.Length < 18 ||
+		dest == nil {
+		return false
+	}
+	dest.KillerID = ReadUint32(p.Data, &p.CurOffset)
+	dest.Unk00 = ReadUint8(p.Data, &p.CurOffset)
+	dest.AssisterID = ReadUint32(p.Data, &p.CurOffset)
+	dest.Unk01 = ReadUint16(p.Data, &p.CurOffset)
+	dest.Unk02 = ReadUint16(p.Data, &p.CurOffset)
+	dest.Unk03 = ReadUint16(p.Data, &p.CurOffset)
+	dest.AssisterTeam = ReadUint8(p.Data, &p.CurOffset)
+	return true
+}
+
+func (p *PacketData) PraseSetBuyMenuPacket(dest *InHostSetBuyMenu) bool {
+	//id + type + userid = 6 bytes
+	if dest == nil ||
+		p.Length < 6 {
+		return false
+	}
+	dest.Userid = ReadUint32(p.Data, &p.CurOffset)
+	return true
+}
+
+func (p *PacketData) PraseInTeamChangingPacket(dest *InHostTeamChangingPacket) bool {
+	//id + type + userid + team + unk = 8 bytes
+	if p.Length < 8 ||
+		dest == nil {
+		return false
+	}
+	dest.UserId = ReadUint32(p.Data, &p.CurOffset)
+	dest.NewTeam = ReadUint8(p.Data, &p.CurOffset)
+	dest.Unk00 = ReadUint8(p.Data, &p.CurOffset)
+	return true
+}
+
+func (p *PacketData) PraseSetUserLoadoutPacket(dest *InHostSetLoadoutPacket) bool {
+	//id + type + userid = 6 bytes
+	if dest == nil ||
+		p.Length < 6 {
+		return false
+	}
+	dest.UserID = ReadUint32(p.Data, &p.CurOffset)
+	return true
+}
+
+func (p *PacketData) PraseInGameScorePacket(dest *InGameScorePacket) bool {
+	//id + type +... = 6 bytes
+	if p.Length < 6 ||
+		dest == nil {
+		return false
+	}
+	dest.WinnerTeam = ReadUint8(p.Data, &p.CurOffset)
+	dest.TrScore = ReadUint8(p.Data, &p.CurOffset)
+	dest.CtScore = ReadUint8(p.Data, &p.CurOffset)
+	dest.PacketType = ReadUint8(p.Data, &p.CurOffset)
+	if dest.PacketType != 0 {
+		dest.HostID = ReadUint32(p.Data, &p.CurOffset)
+		dest.Unk00 = ReadUint32(p.Data, &p.CurOffset)
+	}
+	return true
+}
+
+func (p *PacketData) PraseSetUserInventoryPacket(dest *InHostSetInventoryPacket) bool {
+	//id + type + userid = 6 bytes
+	if dest == nil ||
+		p.Length < 6 {
+		return false
+	}
+	dest.UserID = ReadUint32(p.Data, &p.CurOffset)
 	return true
 }
 
