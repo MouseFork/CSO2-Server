@@ -6,6 +6,8 @@
 
 CSOL2 服务器 v0.3.0
 
+数据库：SQLite
+
 *用于韩版 Counter-Strike Online 2
 
 目前客户端请使用L-Leite的启动器。

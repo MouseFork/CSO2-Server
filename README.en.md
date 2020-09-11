@@ -4,6 +4,8 @@
 
 Counter-Strike Online 2 Server
 
+DataBase:SQLite
+
 *It is my first Golang project , in order to practice myself.*
 
 ***This project is incomplete right now !***
