@@ -47,7 +47,7 @@ CSOL2 服务器 v0.3.2
 
 ### 七、使用方法
 
-1.需要有韩版的CSOL2，同时使用第三方启动器，[点击这里下载](https://pan.baidu.com/s/13wEMinbj6E2Z9lds20NU3A) 提取码：picf
+1.需要有CSOL2客户端，同时使用第三方启动器， [点击韩服端下载](https://pan.baidu.com/s/13wEMinbj6E2Z9lds20NU3A) 提取码：picf       [点击2017年国服端下载](https://pan.baidu.com/s/1_aY2vsTEWcffsq1S8JMb3A)  提取码：aw06
 
 2.进入本项目的release页面下载最新版本的程序（ https://github.com/KouKouChan/CSO2-Server/releases ）
 
