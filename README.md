@@ -63,7 +63,7 @@ START ./bin/launcher.exe -masterip IP地址 -enablecustom -username 用户名 -p
 -lang schinese
 ```
 
-5.先运行本项目的exe文件启动服务器，然后打开bat文件启动客户端即可
+5.先运行本项目的exe文件启动服务器，然后打开bat文件启动客户端即可（国服端可能启动稍慢）
 
 - 从网盘里面下载得到的start-cso2.bat文件需要修改里面的IP地址和用户名！
 - 如果你需要注册，请修改server.conf文件，将EnableRegister值修改为1，然后你可以使用浏览器打开 localhost:1314 来注册，默认注册端口为1314。
