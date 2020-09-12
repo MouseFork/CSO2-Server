@@ -441,6 +441,16 @@ func (rm *Room) SetRoomWinner(Winner uint8) {
 	rm.WinnerTeam = Winner
 }
 
+func (rm *Room) SetRoomHost(u *User) {
+	if rm == nil {
+		return
+	}
+	rm.RoomMutex.Lock()
+	defer rm.RoomMutex.Unlock()
+	rm.HostUserID = u.Userid
+	rm.HostUserName = u.Username
+}
+
 func (rm *Room) ResetRoomWinner() {
 	if rm == nil {
 		return

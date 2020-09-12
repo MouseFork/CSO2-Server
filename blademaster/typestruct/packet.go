@@ -347,8 +347,8 @@ func (dataPacket *PacketData) PraseLoginPacket(p *InLoginPacket) bool {
 	p.UnknownString03 = ReadString(dataPacket.Data, &dataPacket.CurOffset, int(p.LenOfUnknownString))
 	p.Unknown04 = ReadUint8(dataPacket.Data, &dataPacket.CurOffset)
 	p.IsLeague = ReadUint8(dataPacket.Data, &dataPacket.CurOffset)
-	p.LenOfString = ReadUint8(dataPacket.Data, &dataPacket.CurOffset)
-	p.String = ReadString(dataPacket.Data, &dataPacket.CurOffset, int(p.LenOfString))
+	//p.LenOfString = ReadUint8(dataPacket.Data, &dataPacket.CurOffset)
+	//p.String = ReadString(dataPacket.Data, &dataPacket.CurOffset, int(p.LenOfString))
 	//...
 	return true
 }

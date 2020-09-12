@@ -45,6 +45,7 @@ func OnLeaveRoom(p *PacketData, client net.Conn) {
 		SentUserLeaveMes(uPtr, rm)
 	}
 	//设置玩家状态
+	p.Data = make([]byte, 3)
 	p.Length = 3
 	p.Data[1] = uPtr.GetUserChannelServerID()
 	p.Data[2] = uPtr.GetUserChannelID()
@@ -58,9 +59,11 @@ func OnLeaveRoom(p *PacketData, client net.Conn) {
 }
 func SentUserLeaveMes(uPtr *User, rm *Room) {
 	//如果玩家是房主
+	for _, v := range rm.Users {
+		rm.SetRoomHost(v)
+		break
+	}
 	if rm.HostUserID == uPtr.Userid {
-		rm.HostUserID = rm.Users[0].Userid
-		rm.HostUserName = rm.Users[0].Username
 		for _, v := range rm.Users {
 			rst1 := append(BuildHeader(v.CurrentSequence, PacketTypeRoom), OUTPlayerLeave)
 			rst1 = BytesCombine(rst1, BuildUserLeave(uPtr.Userid))

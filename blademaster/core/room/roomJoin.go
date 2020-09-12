@@ -71,14 +71,16 @@ func OnJoinRoom(p *PacketData, client net.Conn) {
 	SendPacket(rst, client)
 	DebugInfo(2, "Sent a room setting packet to", string(uPtr.Username))
 	//发送玩家状态
+	ustatus := BuildUserReadyStatus(uPtr)
+	uplayjoin := BuildPlayerJoin(uPtr)
 	for _, v := range rm.Users {
 		rst := BytesCombine(BuildHeader(uPtr.CurrentSequence, PacketTypeRoom), BuildUserReadyStatus(v))
 		SendPacket(rst, uPtr.CurrentConnection)
 		if v.Userid != uPtr.Userid {
 			//发送给其他玩家该玩家信息
-			rst = BytesCombine(BuildHeader(v.CurrentSequence, PacketTypeRoom), BuildPlayerJoin(uPtr))
+			rst = BytesCombine(BuildHeader(v.CurrentSequence, PacketTypeRoom), uplayjoin)
 			SendPacket(rst, v.CurrentConnection)
-			rst = BytesCombine(BuildHeader(v.CurrentSequence, PacketTypeRoom), BuildUserReadyStatus(uPtr))
+			rst = BytesCombine(BuildHeader(v.CurrentSequence, PacketTypeRoom), ustatus)
 			SendPacket(rst, v.CurrentConnection)
 		}
 	}

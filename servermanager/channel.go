@@ -51,6 +51,9 @@ func GetNewChannelID(chlsrv ChannelServer) uint8 {
 func GetChannelWithID(id uint8, chlsrv ChannelServer) *ChannelInfo {
 	count := chlsrv.ChannelCount
 	for i := 0; i < int(count); i++ {
+		if chlsrv.Channels[i] == nil {
+			continue
+		}
 		if chlsrv.Channels[i].ChannelID == id {
 			return chlsrv.Channels[i]
 		}
@@ -79,17 +82,23 @@ func AddChannelRoom(room *Room, chlid uint8, chlsrvid uint8) bool {
 		return false
 	}
 	chl.ChannelMutex.Lock()
-	defer chl.ChannelMutex.Unlock()
 	if _, ok := chl.Rooms[room.Id]; ok {
 		DebugInfo(2, "Room is already existed in Channel!")
+		chl.ChannelMutex.Unlock()
 		return false
 	}
+	chl.ChannelMutex.Unlock()
 	if !AddRoomToManager(room) {
 		return false
 	}
+	chl.ChannelMutex.Lock()
+	defer chl.ChannelMutex.Unlock()
 	chl.RoomNum++
 	chl.Rooms[room.Id] = room
 	chl.RoomNums[room.RoomNumber] = room.Id
+	if chl.Rooms[room.Id] == nil {
+		DebugInfo(2, "Warning ! add nil room ")
+	}
 	return true
 }
 

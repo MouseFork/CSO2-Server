@@ -37,10 +37,12 @@ func OnNewRoom(p *PacketData, client net.Conn) {
 		return
 	}
 	//修改用户相关信息
-	rm.HostUserID = uPtr.Userid
-	rm.HostUserName = uPtr.Username
-	rm.Users[rm.HostUserID] = uPtr
-	rm.NumPlayers = 1
+
+	rm.SetRoomHost(uPtr)
+	if !rm.JoinUser(uPtr) {
+		DebugInfo(2, "Error :", string(uPtr.Username), "cannot join a new room !")
+		return
+	}
 
 	// u := rm.RoomGetUser(uPtr.Userid)
 	// if u == nil {
@@ -54,6 +56,7 @@ func OnNewRoom(p *PacketData, client net.Conn) {
 	if !AddChannelRoom(&rm,
 		uPtr.GetUserChannelID(),
 		uPtr.GetUserChannelServerID()) {
+		DebugInfo(2, "Add romm", string(rm.Setting.RoomName), "to manager failed !")
 		uPtr.QuitRoom()
 		return
 	}

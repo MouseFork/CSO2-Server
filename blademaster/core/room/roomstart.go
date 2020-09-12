@@ -50,15 +50,17 @@ func OnGameStart(p *PacketData, client net.Conn) {
 					v.ResetKillNum()
 					v.ResetDeadNum()
 					v.SetUserIngame(true)
-					//连接到主机
-					rst = UDPBuild(v.CurrentSequence, 1, uPtr.Userid, uPtr.NetInfo.ExternalIpAddress, uPtr.NetInfo.ExternalServerPort)
-					SendPacket(rst, v.CurrentConnection)
-					//加入主机
-					rst = BytesCombine(BuildHeader(v.CurrentSequence, PacketTypeHost), BuildJoinHost(uPtr.Userid))
-					SendPacket(rst, v.CurrentConnection)
 					//给主机发送其他人的数据
 					rst = UDPBuild(uPtr.CurrentSequence, 0, v.Userid, v.NetInfo.ExternalIpAddress, v.NetInfo.ExternalClientPort)
 					SendPacket(rst, uPtr.CurrentConnection)
+					DebugInfo(2, v.NetInfo.ExternalIpAddress, v.NetInfo.ExternalClientPort)
+					//连接到主机
+					rst = UDPBuild(v.CurrentSequence, 1, uPtr.Userid, uPtr.NetInfo.ExternalIpAddress, uPtr.NetInfo.ExternalServerPort)
+					SendPacket(rst, v.CurrentConnection)
+					DebugInfo(2, uPtr.NetInfo.ExternalIpAddress, uPtr.NetInfo.ExternalClientPort)
+					//加入主机
+					rst = BytesCombine(BuildHeader(v.CurrentSequence, PacketTypeHost), BuildJoinHost(uPtr.Userid))
+					SendPacket(rst, v.CurrentConnection)
 				}
 			}
 		}
@@ -90,15 +92,15 @@ func OnGameStart(p *PacketData, client net.Conn) {
 		//发送房间数据
 		rst := BytesCombine(BuildHeader(uPtr.CurrentSequence, PacketTypeRoom), setting)
 		SendPacket(rst, uPtr.CurrentConnection)
+		//给主机发送其他人的数据
+		rst = UDPBuild(host.CurrentSequence, 0, uPtr.Userid, uPtr.NetInfo.ExternalIpAddress, uPtr.NetInfo.ExternalClientPort)
+		SendPacket(rst, host.CurrentConnection)
 		//连接到主机
 		rst = UDPBuild(uPtr.CurrentSequence, 1, host.Userid, host.NetInfo.ExternalIpAddress, host.NetInfo.ExternalServerPort)
 		SendPacket(rst, uPtr.CurrentConnection)
 		//加入主机
 		rst = BytesCombine(BuildHeader(uPtr.CurrentSequence, PacketTypeHost), BuildJoinHost(host.Userid))
 		SendPacket(rst, uPtr.CurrentConnection)
-		//给主机发送其他人的数据
-		rst = UDPBuild(host.CurrentSequence, 0, uPtr.Userid, uPtr.NetInfo.ExternalIpAddress, uPtr.NetInfo.ExternalClientPort)
-		SendPacket(rst, host.CurrentConnection)
 		//给每个人发送房间内所有人的准备状态
 		for _, v := range rm.Users {
 			temp := BuildUserReadyStatus(v)
