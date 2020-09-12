@@ -51,13 +51,13 @@ CSOL2 服务器 v0.3.2
 
 2.进入本项目的release页面下载最新版本的程序（ https://github.com/KouKouChan/CSO2-Server/releases ）
 
-3.建立bat文件，和游戏的bin目录同级，里面写入：
+3 .(国服端请跳过该步骤) 建立bat文件，和游戏的bin目录同级，里面写入：
 
 ```shell
 START ./bin/launcher.exe -masterip IP地址 -enablecustom -username 用户名 -password 密码
 ```
 
-4.IP地址指的是你的服务端IP，如果是本地那么就填127.0.0.1，如果你要连接局域网别人的服务端那么就填别人的IP地址，如果你安装了汉化包，也可以再加上以下语句：
+4.IP地址指的是你的服务端IP，如果是本地那么就填127.0.0.1（仅单人情况下），如果你要连接局域网别人的服务端那么就填别人的IP地址，如果你安装了汉化包，也可以再加上以下语句：
 
 ```shell
 -lang schinese
@@ -67,6 +67,7 @@ START ./bin/launcher.exe -masterip IP地址 -enablecustom -username 用户名 -p
 
 - 从网盘里面下载得到的start-cso2.bat文件需要修改里面的IP地址和用户名！
 - 如果你需要注册，请修改server.conf文件，将EnableRegister值修改为1，默认注册端口为1314,同时你需要一个邮箱账号并且申请到了密钥，然后你可以使用浏览器打开localhost:1314来注册。
+- 如果你是和别人联机玩，那么即使你的电脑运行着服务端也不能在bat文件里填127.0.0.1，不然对方无法通过你的ip连接你。
 
 ### 八、自定义文件方法
 
