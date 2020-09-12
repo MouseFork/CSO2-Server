@@ -4,11 +4,11 @@
 
 ### 一、介绍
 
-CSOL2 服务器 v0.3.0
+CSOL2 服务器 v0.3.2
 
 数据库：SQLite
 
-*用于韩版 Counter-Strike Online 2
+*用于韩版 Counter-Strike Online 2 和 旧版国服端
 
 目前客户端请使用L-Leite的启动器。
 
