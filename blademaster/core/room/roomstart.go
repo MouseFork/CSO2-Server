@@ -53,11 +53,9 @@ func OnGameStart(p *PacketData, client net.Conn) {
 					//给主机发送其他人的数据
 					rst = UDPBuild(uPtr.CurrentSequence, 0, v.Userid, v.NetInfo.ExternalIpAddress, v.NetInfo.ExternalClientPort)
 					SendPacket(rst, uPtr.CurrentConnection)
-					DebugInfo(2, v.NetInfo.ExternalIpAddress, v.NetInfo.ExternalClientPort)
 					//连接到主机
 					rst = UDPBuild(v.CurrentSequence, 1, uPtr.Userid, uPtr.NetInfo.ExternalIpAddress, uPtr.NetInfo.ExternalServerPort)
 					SendPacket(rst, v.CurrentConnection)
-					DebugInfo(2, uPtr.NetInfo.ExternalIpAddress, uPtr.NetInfo.ExternalClientPort)
 					//加入主机
 					rst = BytesCombine(BuildHeader(v.CurrentSequence, PacketTypeHost), BuildJoinHost(uPtr.Userid))
 					SendPacket(rst, v.CurrentConnection)

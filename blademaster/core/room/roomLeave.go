@@ -55,22 +55,44 @@ func OnLeaveRoom(p *PacketData, client net.Conn) {
 	rm.CheckIngameStatus()
 	//发送房间列表给玩家
 	OnRoomList(p, client)
-	DebugInfo(2, "User", string(uPtr.Username), "left room", string(rm.Setting.RoomName), "id", rm.Id)
+	DebugInfo(2, "User", string(uPtr.Username), "id", uPtr.Userid, "left room", string(rm.Setting.RoomName), "id", rm.Id)
 }
 func SentUserLeaveMes(uPtr *User, rm *Room) {
-	//如果玩家是房主
-	for _, v := range rm.Users {
-		rm.SetRoomHost(v)
-		break
-	}
+	//发送离开消息
 	if rm.HostUserID == uPtr.Userid {
+		//选出新房主
 		for _, v := range rm.Users {
+			rm.SetRoomHost(v)
+			DebugInfo(2, "User", string(v.Username), "id", v.Userid, "is host in room", string(rm.Setting.RoomName), "id", rm.Id)
+			if !v.CurrentIsIngame {
+				v.SetUserStatus(UserNotReady)
+				temp := BuildUserReadyStatus(v)
+				for _, k := range rm.Users {
+					rst := BytesCombine(BuildHeader(k.CurrentSequence, PacketTypeRoom), temp)
+					SendPacket(rst, k.CurrentConnection)
+				}
+			}
+			break
+		}
+		numInGame := 0
+		for _, v := range rm.Users {
+			if v.CurrentIsIngame {
+				numInGame++
+			}
 			rst1 := append(BuildHeader(v.CurrentSequence, PacketTypeRoom), OUTPlayerLeave)
 			rst1 = BytesCombine(rst1, BuildUserLeave(uPtr.Userid))
 			rst2 := append(BuildHeader(v.CurrentSequence, PacketTypeRoom), OUTSetHost)
 			rst2 = BytesCombine(rst2, BuildSetHost(rm.HostUserID))
 			SendPacket(rst1, v.CurrentConnection)
 			SendPacket(rst2, v.CurrentConnection)
+		}
+		if numInGame == 0 {
+			rm.SetStatus(StatusWaiting)
+			// setting := BuildRoomSetting(rm, 0x404000)
+			// for _, v := range rm.Users {
+			// 	rst := BytesCombine(BuildHeader(uPtr.CurrentSequence, PacketTypeRoom), setting)
+			// 	SendPacket(rst, v.CurrentConnection)
+			// }
 		}
 		DebugInfo(2, "Sent a set roomHost packet to other users")
 	} else {

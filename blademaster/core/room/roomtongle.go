@@ -45,16 +45,19 @@ func OnToggleReady(p *PacketData, client net.Conn) {
 		return
 	}
 	//设置新的状态
-	if uPtr.Currentstatus == UserNotReady {
-		uPtr.SetUserStatus(UserReady)
+	if uPtr.Currentstatus == UserReady {
+		uPtr.SetUserStatus(UserNotReady)
+		uPtr.SetUserIngame(false)
 		DebugInfo(2, "User", string(uPtr.Username), "unreadied in room", string(curroom.Setting.RoomName), "id", curroom.Id)
 	} else {
-		uPtr.SetUserStatus(UserNotReady)
+		uPtr.SetUserStatus(UserReady)
 		DebugInfo(2, "User", string(uPtr.Username), "readied in room", string(curroom.Setting.RoomName), "id", curroom.Id)
+
 	}
 	//对房间所有玩家发送该玩家的状态
+	ustatus := BuildUserReadyStatus(uPtr)
 	for _, v := range curroom.Users {
-		rst := BytesCombine(BuildHeader(v.CurrentSequence, p.Id), BuildUserReadyStatus(uPtr))
+		rst := BytesCombine(BuildHeader(v.CurrentSequence, p.Id), ustatus)
 		SendPacket(rst, v.CurrentConnection)
 	}
 }

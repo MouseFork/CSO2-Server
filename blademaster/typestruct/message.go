@@ -12,6 +12,7 @@ var (
 	GAME_SERVER_ERROR                    = []byte("你与服务端的连接遭遇到不可恢复性错误，请联系服务器管理员并提供报错信息以便管理员查找和修复错误！")
 	GAME_LOGIN_ALREADY                   = []byte("您的账号当前已经有人登录！如果你的账号已泄露请联系管理员！")
 	GAME_LOGIN_ERROR                     = []byte("登录过程发生错误，请联系服务器管理员并提供报错信息以便管理员查找和修复错误！")
+	GAME_ROOM_COUNT_MODE_ERROR           = []byte("无法开始游戏！请检查你的房间设置，比如是否有2人及以上或者开启bot")
 	GAME_ROOM_JOIN_FAILED_CLOSED         = []byte("#CSO2_POPUP_ROOM_JOIN_FAILED_CLOSED")
 	GAME_ROOM_JOIN_FAILED_FULL           = []byte("#CSO2_POPUP_ROOM_JOIN_FAILED_FULL")
 	GAME_ROOM_JOIN_FAILED_BAD_PASSWORD   = []byte("#CSO2_POPUP_ROOM_JOIN_FAILED_INVALID_PASSWD")

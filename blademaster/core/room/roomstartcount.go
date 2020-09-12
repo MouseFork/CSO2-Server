@@ -3,6 +3,7 @@ package room
 import (
 	"net"
 
+	. "github.com/KouKouChan/CSO2-Server/blademaster/core/message"
 	. "github.com/KouKouChan/CSO2-Server/blademaster/typestruct"
 	. "github.com/KouKouChan/CSO2-Server/kerlong"
 	. "github.com/KouKouChan/CSO2-Server/servermanager"
@@ -44,6 +45,8 @@ func OnGameStartCountdown(p *PacketData, client net.Conn) {
 	//检查当前游戏模式
 	if !curroom.CanStartGame() {
 		DebugInfo(2, "Error : User", string(uPtr.Username), "try to start countdown but mode is illegal !")
+		OnSendMessage(uPtr.CurrentSequence, uPtr.CurrentConnection, DialogBox,
+			GAME_ROOM_COUNT_MODE_ERROR)
 		return
 	}
 	//检查是否应该继续倒计时
