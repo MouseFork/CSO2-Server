@@ -2,6 +2,10 @@
 
 [English](./README.en.md)
 
+> Relay Supported CSO2 Golang Server: http://discord.gg/csonline2
+> Can you come for communication?
+> Relay has been integrated into the golang server without any problems, but the source code is outdated and is insufficient.
+
 ### 一、介绍
 
 CSOL2 服务器 v0.3.2
