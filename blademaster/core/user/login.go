@@ -48,6 +48,19 @@ func OnLogin(seq *uint8, dataPacket *PacketData, client net.Conn) {
 		DebugInfo(2, "Error : User", string(pkt.NexonUsername), "from", client.RemoteAddr().String(), "login failed !")
 		return
 	}
+	
+	//blademaster\core\user\nickname.go:127:30: invalid operation: string(pkt.Nickname) == x[:] (mismatched types string and []string)
+	x := [3]string{
+	"GameMaster",
+	"GM",
+	"KEK"}
+	s := x[:]
+	
+	if string(pkt.Nickname) == x[:] {
+		OnSendMessage(v.CurrentSequence, v.CurrentConnection, MessageDialogBox, []byte("CSO2_NickName_Error_Prohibited"))
+		DebugInfo(2, "User: Tried to Get: [", uPtr.Userid, "] Uid Banned Player Name")
+		return
+	}
 
 	//UserStart部分
 	rst := BytesCombine(BuildHeader(u.CurrentSequence, PacketTypeUserStart), BuildUserStart(u))
